@@ -122,6 +122,8 @@ let g:lightline = {
 " COC stuff                                          "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 if !has("nvim")
+    let g:coc_disable_startup_warning = 1
+
     set updatetime=300
     set signcolumn=yes
     inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
