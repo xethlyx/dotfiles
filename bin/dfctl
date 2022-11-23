@@ -6,6 +6,8 @@ set -o pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
 
+FULL_HISTORY=false
+
 usage() {
     cat << USAGE
 Dot Files Control
@@ -18,13 +20,18 @@ Usage:
 Options:
   -h  Show this message.
   -v  Shows the version.
+  -a  Pull full history from git
 USAGE
 }
 
-install() (
+install-only() (
     if [ -d "backup" ]; then
         printf "already installed\n"
         exit 1
+    fi
+
+    if [ -f "update.sh" ]; then
+        ./update.sh
     fi
 
     cd etc
@@ -56,6 +63,14 @@ install() (
         fi
     done
 )
+
+install() {
+    if [ -f "setup.sh" ]; then
+        ./setup.sh
+    fi
+
+    install-only
+}
 
 uninstall-only() (
     if [ ! -f data.lock ]; then
@@ -145,13 +160,17 @@ upstream() {
 
 update() {
     if [ ! upstream = "outdated" ]; then
-       printf "cannot update: %s != outdated\n" "upstream"
+       printf "cannot update: current status '%s' is not outdated\n" "upstream"
        exit 1
     fi
 
     uninstall-only
-    git pull
-    install
+    if [ $FULL_HISTORY ]; then
+        git pull
+    else
+        git pull --depth=1
+    fi
+    install-only
 }
 
 while getopts ':hv' option; do
@@ -164,6 +183,8 @@ while getopts ':hv' option; do
             git log --pretty=format:"version %h ($(upstream))%n(%an, %ar) %s" -n 1
             exit
             ;;
+        e)
+            FULL_HISTORY=true
         *)
             printf "illegal option: -%s\n\n" "$OPTARG" >&2
             usage >&2
