@@ -138,7 +138,7 @@ uninstall() {
 
 
 upstream() {
-    git remote update
+    git remote update > /dev/null
 
     UPSTREAM=${1:-'@{u}'}
     LOCAL=$(git rev-parse @)
@@ -159,9 +159,9 @@ upstream() {
 }
 
 update() {
-    if [ ! upstream = "outdated" ]; then
-       printf "cannot update: current status '%s' is not outdated\n" "upstream"
-       exit 1
+    if [ ! $(upstream) = "outdated" ]; then
+        printf "cannot update: current status '%s' is not outdated\n" $(upstream)
+        exit 1
     fi
 
     uninstall-only
