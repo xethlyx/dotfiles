@@ -25,8 +25,8 @@ USAGE
 }
 
 install-only() (
-    if [ -d "backup" ]; then
-        printf "already installed\n"
+    if [ -d "backup" -o -f "data.lock" ]; then
+        printf "already installed\n" 1>&2
         exit 1
     fi
 
@@ -37,7 +37,7 @@ install-only() (
     cd etc
     BACKUP="../backup"
     DATA="../data.lock"
-    for TEMPLATE_FILE in $(find * .[^.]* -type f); do
+    for TEMPLATE_FILE in $(find * .[^.]* -type f 2>/dev/null); do
         TARGET_FILE="$HOME/$TEMPLATE_FILE"
         if [ -f "$TARGET_FILE" ]; then
             if [ $TARGET_FILE -ef $TEMPLATE_FILE ]; then
@@ -75,10 +75,10 @@ install() {
 uninstall-only() (
     if [ ! -f data.lock ]; then
         if [ -d "backup" ]; then
-            printf "backup folder found but no data.lock file found\nthis could be the result of a failed uninstall - please manually clean up.\n"
+            printf "backup folder found but no data.lock file found\nthis could be the result of a failed uninstall - please manually clean up.\n" 1>&2
             exit 1
         fi
-        printf "no data file found\n"
+        printf "no data file found\n" 1>&2
         exit 1
     fi
 
@@ -88,13 +88,13 @@ uninstall-only() (
         if [ $FILE = "" ]; then continue; fi
         if [ -f $HOME/$FILE ]; then
             if [ ! $HOME/$FILE -ef $FILE ]; then
-                printf "skipped '%s': mismatched file\n" "$FILE"
+                printf "skipped '%s': mismatched file\n" "$FILE" 1>&2
                 continue
             fi
             rm $HOME/$FILE
             printf "removed '%s'\n" "$FILE"
         else
-            printf "unable to find '%s'\n" "$FILE"
+            printf "unable to find '%s'\n" "$FILE" 1>&2
         fi
     done < ../data.lock
 
@@ -110,11 +110,11 @@ restore-backup() (
     fi
 
     cd backup
-    for BACKUP in $(find * .[^.]* -type f); do
+    for BACKUP in $(find * .[^.]* -type f 2>/dev/null); do
         TARGET="$HOME/$BACKUP"
         if [ -e $TARGET ]; then
             ENTIRE=false
-            printf "unable to restore '%s': file kept in place\n" "backup/$BACKUP"
+            printf "unable to restore '%s': file kept in place\n" "backup/$BACKUP" 1>&2
             continue
         fi
 
@@ -122,7 +122,7 @@ restore-backup() (
     done
 
     if [ ! entire ]; then
-        printf "unable to restore all files successfully. relevant files are in %s and will need to be cleaned up.\n" "$(pwd)"
+        printf "unable to restore all files successfully. relevant files are in %s and will need to be cleaned up.\n" "$(pwd)" 1>&2
         exit 1
     fi
 
@@ -160,7 +160,7 @@ upstream() {
 
 update() {
     if [ ! $(upstream) = "outdated" ]; then
-        printf "cannot update: current status '%s' is not outdated\n" $(upstream)
+        printf "cannot update: current status '%s' is not outdated\n" $(upstream) 1>&2
         exit 1
     fi
 
@@ -187,7 +187,7 @@ while getopts ':hv' option; do
             FULL_HISTORY=true
             ;;
         *)
-            printf "illegal option: -%s\n\n" "$OPTARG" >&2
+            printf "illegal option: -%s\n\n" "$OPTARG" 1>&2
             usage >&2
             exit 1
             ;;
@@ -206,7 +206,7 @@ case "${1-default}" in
         ;;
     *)
         if [ $# -ne 0 ]; then
-            printf "illegal argument: %s\n\n" "$1"
+            printf "illegal argument: %s\n\n" "$1" 1>&2
         fi
         usage
         ;;
