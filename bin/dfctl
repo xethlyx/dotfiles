@@ -25,8 +25,8 @@ USAGE
 }
 
 install-only() (
-    if [ -d "backup" -o -f "data.lock" ]; then
-        printf "already installed\n" 1>&2
+    if [ -f "data.lock" ]; then
+        printf "already installed: data.lock present\n" 1>&2
         exit 1
     fi
 
@@ -65,6 +65,11 @@ install-only() (
 )
 
 install() {
+    if [ -d "backup" ]; then
+        printf "already installed: backup folder present\n" 1>&2
+        exit 1
+    fi
+
     if [ -f "setup.sh" ]; then
         ./setup.sh
     fi
