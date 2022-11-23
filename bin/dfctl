@@ -185,6 +185,7 @@ while getopts ':hv' option; do
             ;;
         e)
             FULL_HISTORY=true
+            ;;
         *)
             printf "illegal option: -%s\n\n" "$OPTARG" >&2
             usage >&2
