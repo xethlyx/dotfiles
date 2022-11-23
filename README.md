@@ -3,9 +3,8 @@
 **Usage**:
 1. Fork this repository
 2. Clone this repository into your home using `git clone <repository here> --depth=1 --branch=main`
-3. Run `chmod +x dotfiles/bin/dfctl`
-4. Run `dotfiles/bin/dfctl install`.  
-5. RECOMMENDED: Add `$HOME/dotfiles/bin` to path
+3. Run `dotfiles/bin/dfctl install`.  
+4. RECOMMENDED: Add `$HOME/dotfiles/bin` to path
 
 Optionally, add a `setup.sh` in the root to automatically run scripts on install, or an `update.sh` to be run on updates.
 
