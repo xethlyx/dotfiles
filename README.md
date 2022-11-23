@@ -2,7 +2,7 @@
 
 **Usage**:
 1. Fork this repository
-2. Clone this repository into your home using `git clone <repository here> --depth=1 --branch=master`
+2. Clone this repository into your home using `git clone <repository here> --depth=1 --branch=main`
 3. Run `dotfiles/bin/dfctl install`.  
 4. RECOMMENDED: Add `$HOME/dotfiles/bin` to path
 
