@@ -1,0 +1,191 @@
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+cd ..
+
+usage() {
+    cat << USAGE
+Dot Files Control
+
+Usage:
+  $(basename "$0") install
+  $(basename "$0") uninstall
+  $(basename "$0") update
+
+Options:
+  -h  Show this message.
+  -v  Shows the version.
+USAGE
+}
+
+install() (
+    if [ -d "backup" ]; then
+        printf "already installed\n"
+        exit 1
+    fi
+
+    cd etc
+    BACKUP="../backup"
+    DATA="../data.lock"
+    for TEMPLATE_FILE in $(find * -type f); do
+        TARGET_FILE="$HOME/$TEMPLATE_FILE"
+        if [ -f "$TARGET_FILE" ]; then
+            if [ $TARGET_FILE -ef $TEMPLATE_FILE ]; then
+                printf "skipped '%s'\n" "$TARGET_FILE"
+                continue
+            fi
+            if [ -L $TARGET_FILE ]; then
+                unlink $TARGET_FILE
+                ln $TEMPLATE_FILE $TARGET_FILE
+                printf "relinked '%s'\n" "$TARGET_FILE"
+                echo $TEMPLATE_FILE >> $DATA
+                continue
+            fi
+            mkdir -p $(dirname $BACKUP/$TEMPLATE_FILE)
+            mv $TARGET_FILE $BACKUP/$TEMPLATE_FILE
+            ln $TEMPLATE_FILE $TARGET_FILE
+            echo $TEMPLATE_FILE >> $DATA
+            printf "overwrote '%s'\n" "$TARGET_FILE"
+        else
+            ln $TEMPLATE_FILE $TARGET_FILE
+            echo $TEMPLATE_FILE >> $DATA
+            printf "linked '%s'\n" "$TARGET_FILE"
+        fi
+    done
+)
+
+uninstall-only() (
+    if [ ! -f data.lock ]; then
+        if [ -d "backup" ]; then
+            printf "backup folder found but no data.lock file found\nthis could be the result of a failed uninstall - please manually clean up.\n"
+            exit 1
+        fi
+        printf "no data file found\n"
+        exit 1
+    fi
+
+    cd etc
+
+    while read FILE; do
+        if [ $FILE = "" ]; then continue; fi
+        if [ -f $HOME/$FILE ]; then
+            if [ ! $HOME/$FILE -ef $FILE ]; then
+                printf "skipped '%s': mismatched file\n" "$FILE"
+                continue
+            fi
+            rm $HOME/$FILE
+            printf "removed '%s'\n" "$FILE"
+        else
+            printf "unable to find '%s'\n" "$FILE"
+        fi
+    done < ../data.lock
+
+    rm ../data.lock
+    printf "removed data file\n"
+)
+
+restore-backup() (
+    ENTIRE=true    
+    if [ ! -d "backup" ]; then
+        printf "skipped backup restore: nothing to do\n"
+        return
+    fi
+
+    cd backup
+    for BACKUP in $(find * -type f); do
+        TARGET="$HOME/$BACKUP"
+        if [ -e $TARGET ]; then
+            ENTIRE=false
+            printf "unable to restore '%s': file kept in place\n" "backup/$BACKUP"
+            continue
+        fi
+
+        mv $BACKUP $TARGET
+    done
+
+    if [ ! entire ]; then
+        printf "unable to restore all files successfully. relevant files are in %s and will need to be cleaned up.\n" "$(pwd)"
+        exit 1
+    fi
+
+    printf "restored backup successfully\n"
+    cd ..
+    rm -r backup/
+)
+
+uninstall() {
+    uninstall-only
+    restore-backup
+}
+
+
+upstream() {
+    git remote update
+
+    UPSTREAM=${1:-'@{u}'}
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse "$UPSTREAM")
+    BASE=$(git merge-base @ "$UPSTREAM")
+
+    if [ "$(git diff --stat)" != "" ]; then
+        echo "dirty"
+    elif [ $LOCAL = $REMOTE ]; then
+        echo "up-to-date"
+    elif [ $LOCAL = $BASE ]; then
+        echo "outdated"
+    elif [ $REMOTE = $BASE ]; then
+        echo "newer than source"
+    else
+        echo "diverged"
+    fi
+}
+
+update() {
+    if [ ! upstream = "outdated" ]; then
+       printf "cannot update: %s != outdated\n" "upstream"
+       exit 1
+    fi
+
+    uninstall-only
+    git pull
+    install
+}
+
+while getopts ':hv' option; do
+    case "${option}" in
+        h) 
+            usage
+            exit
+            ;;
+        v) 
+            git log --pretty=format:"version %h ($(upstream))%n(%an, %ar) %s" -n 1
+            exit
+            ;;
+        *)
+            printf "illegal option: -%s\n\n" "$OPTARG" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+case "${1-default}" in
+    install)
+        install
+        ;;
+    uninstall)
+        uninstall
+        ;; 
+    update)
+        update
+        ;;
+    *)
+        if [ $# -ne 0 ]; then
+            printf "illegal argument: %s\n\n" "$1"
+        fi
+        usage
+        ;;
+esac
