@@ -37,7 +37,7 @@ install-only() (
     cd etc
     BACKUP="../backup"
     DATA="../data.lock"
-    for TEMPLATE_FILE in $(find * .* -type f); do
+    for TEMPLATE_FILE in $(find * .[^.]* -type f); do
         TARGET_FILE="$HOME/$TEMPLATE_FILE"
         if [ -f "$TARGET_FILE" ]; then
             if [ $TARGET_FILE -ef $TEMPLATE_FILE ]; then
@@ -110,7 +110,7 @@ restore-backup() (
     fi
 
     cd backup
-    for BACKUP in $(find * .* -type f); do
+    for BACKUP in $(find * .[^.]* -type f); do
         TARGET="$HOME/$BACKUP"
         if [ -e $TARGET ]; then
             ENTIRE=false
