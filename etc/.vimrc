@@ -1,27 +1,24 @@
-" Auto install VimPlug
-let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
-if empty(glob(data_dir . '/autoload/plug.vim'))
-    silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
-
-" Run PlugInstall if there are missing plugins
-autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
-    \| PlugInstall --sync | source $MYVIMRC
-\| endif
-
 call plug#begin()
 
-if !has("nvim")
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'josa42/vim-lightline-coc'
-    Plug 'jackguo380/vim-lsp-cxx-highlight'
-endif
+" set cmdheight=10
+
+" if !has("nvim")
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'josa42/vim-lightline-coc'
+Plug 'jackguo380/vim-lsp-cxx-highlight'
+" endif
 
 if has("nvim")
-    Plug 'neovim/nvim-lspconfig'
-    " Plug 'hrsh7th/nvim-cmp'
+    " Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    " lua require('nvim-treesitter.configs').setup { highlight = { enable = true }, indent = { enable = true } }
+    " LINUX ONLY!!
+    " Plug 'icedman/nvim-textmate'
+    " lua require('nvim-textmate')
 endif
+" if has("nvim")
+"     Plug 'neovim/nvim-lspconfig'
+"     " Plug 'hrsh7th/nvim-cmp'
+" endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
 Plug 'itchyny/lightline.vim'
@@ -121,172 +118,170 @@ let g:lightline = {
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 " COC stuff                                          "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
-if !has("nvim")
-    let g:coc_disable_startup_warning = 1
+" if !has("nvim")
+set updatetime=300
+set signcolumn=yes
+inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
+hi! CocErrorSign guifg=#d1666a
+hi! CocInfoSign guibg=#353b45
+hi! CocWarningSign guifg=#d1cd66
+hi! link CocInlayHint Comment
 
-    set updatetime=300
-    set signcolumn=yes
-    inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
-    hi! CocErrorSign guifg=#d1666a
-    hi! CocInfoSign guibg=#353b45
-    hi! CocWarningSign guifg=#d1cd66
-    hi! link CocInlayHint Comment
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call ShowDocumentation()<CR>
 
-    " Use K to show documentation in preview window.
-    nnoremap <silent> K :call ShowDocumentation()<CR>
-
-    function! ShowDocumentation()
-        if CocAction('hasProvider', 'hover')
-            call CocActionAsync('doHover')
-        else
-            call feedkeys('K', 'in')
-        endif
-    endfunction
-
-    " Highlight the symbol and its references when holding the cursor.
-    autocmd CursorHold * silent call CocActionAsync('highlight')
-
-    " Symbol renaming.
-    nmap <leader>rn <Plug>(coc-rename)
-    nmap <f2> <Plug>(coc-rename)
-
-    " Formatting selected code.
-    xmap <leader>f  <Plug>(coc-format-selected)
-    nmap <leader>f  <Plug>(coc-format-selected)
-
-
-    " Applying codeAction to the selected region.
-    " Example: `<leader>aap` for current paragraph
-    xmap <leader>a  <Plug>(coc-codeaction-selected)
-    nmap <leader>a  <Plug>(coc-codeaction-selected)
-
-    " Remap keys for applying codeAction to the current buffer.
-    nmap <leader>ac  <Plug>(coc-codeaction)
-    " Apply AutoFix to problem on the current line.
-    nmap <leader>qf  <Plug>(coc-fix-current)
-
-    " Run the Code Lens action on the current line.
-    nmap <leader>cl  <Plug>(coc-codelens-action)
-
-    " Map function and class text objects
-    " NOTE: Requires 'textDocument.documentSymbol' support from the language server.
-    xmap if <Plug>(coc-funcobj-i)
-    omap if <Plug>(coc-funcobj-i)
-    xmap af <Plug>(coc-funcobj-a)
-    omap af <Plug>(coc-funcobj-a)
-    xmap ic <Plug>(coc-classobj-i)
-    omap ic <Plug>(coc-classobj-i)
-    xmap ac <Plug>(coc-classobj-a)
-    omap ac <Plug>(coc-classobj-a)
-
-    " Remap <C-f> and <C-b> for scroll float windows/popups.
-    if has('nvim-0.4.0') || has('patch-8.2.0750')
-        nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-        nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-        inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-        inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-        vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-        vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+function! ShowDocumentation()
+    if CocAction('hasProvider', 'hover')
+        call CocActionAsync('doHover')
+    else
+        call feedkeys('K', 'in')
     endif
+endfunction
 
-    " Use CTRL-S for selections ranges.
-    " Requires 'textDocument/selectionRange' support of language server.
-    nmap <silent> <C-s> <Plug>(coc-range-select)
-    xmap <silent> <C-s> <Plug>(coc-range-select)
+" Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
-    " Add `:Format` command to format current buffer.
-    command! -nargs=0 Format :call CocActionAsync('format')
+" Symbol renaming.
+nmap <leader>rn <Plug>(coc-rename)
+nmap <f2> <Plug>(coc-rename)
 
-    " Add `:Fold` command to fold current buffer.
-    command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+" Formatting selected code.
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
 
-    " Add `:OR` command for organize imports of the current buffer.
-    command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
+
+" Applying codeAction to the selected region.
+" Example: `<leader>aap` for current paragraph
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Remap keys for applying codeAction to the current buffer.
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Apply AutoFix to problem on the current line.
+nmap <leader>qf  <Plug>(coc-fix-current)
+
+" Run the Code Lens action on the current line.
+nmap <leader>cl  <Plug>(coc-codelens-action)
+
+" Map function and class text objects
+" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
+xmap if <Plug>(coc-funcobj-i)
+omap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap af <Plug>(coc-funcobj-a)
+xmap ic <Plug>(coc-classobj-i)
+omap ic <Plug>(coc-classobj-i)
+xmap ac <Plug>(coc-classobj-a)
+omap ac <Plug>(coc-classobj-a)
+
+" Remap <C-f> and <C-b> for scroll float windows/popups.
+if has('nvim-0.4.0') || has('patch-8.2.0750')
+    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 endif
 
-if has('nvim')
-    :lua require'lspconfig'.hls.setup{}
-    :lua require'lspconfig'.pyright.setup{}
-    " set completeopt=menu,menuone,noselect
-    " :lua << EOF
-    "     -- Set up nvim-cmp.
-    "     local cmp = require'cmp'
+" Use CTRL-S for selections ranges.
+" Requires 'textDocument/selectionRange' support of language server.
+nmap <silent> <C-s> <Plug>(coc-range-select)
+xmap <silent> <C-s> <Plug>(coc-range-select)
 
-    "     cmp.setup({
-    "     snippet = {
-    "         -- REQUIRED - you must specify a snippet engine
-    "         expand = function(args)
-    "         vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-    "         -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-    "         -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-    "         -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-    "         end,
-    "     },
-    "     window = {
-    "         -- completion = cmp.config.window.bordered(),
-    "         -- documentation = cmp.config.window.bordered(),
-    "     },
-    "     mapping = cmp.mapping.preset.insert({
-    "     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-    "     ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    "     ['<C-Space>'] = cmp.mapping.complete(),
-    "     ['<C-e>'] = cmp.mapping.abort(),
-    "     ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-    "     }),
-    "     sources = cmp.config.sources({
-    "     { name = 'nvim_lsp' },
-    "     { name = 'vsnip' }, -- For vsnip users.
-    "     -- { name = 'luasnip' }, -- For luasnip users.
-    "     -- { name = 'ultisnips' }, -- For ultisnips users.
-    "     -- { name = 'snippy' }, -- For snippy users.
-    "     }, {
-    "         { name = 'buffer' },
-    "     })
-    "     })
+" Add `:Format` command to format current buffer.
+command! -nargs=0 Format :call CocActionAsync('format')
 
-    "     -- Set configuration for specific filetype.
-    "     cmp.setup.filetype('gitcommit', {
-    "         sources = cmp.config.sources({
-    "         { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-    "         }, {
-    "             { name = 'buffer' },
-    "         })
-    "         })
+" Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
-    "     -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-    "     cmp.setup.cmdline({ '/', '?' }, {
-    "         mapping = cmp.mapping.preset.cmdline(),
-    "         sources = {
-    "             { name = 'buffer' }
-    "         }
-    "         })
+" Add `:OR` command for organize imports of the current buffer.
+command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
+" endif
 
-    "     -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-    "     cmp.setup.cmdline(':', {
-    "         mapping = cmp.mapping.preset.cmdline(),
-    "         sources = cmp.config.sources({
-    "         { name = 'path' }
-    "         }, {
-    "             { name = 'cmdline' }
-    "         })
-    "         })
+" if has('nvim')
+"     :lua require'lspconfig'.hls.setup{}
+"     :lua require'lspconfig'.pyright.setup{}
+"     " set completeopt=menu,menuone,noselect
+"     " :lua << EOF
+"     "     -- Set up nvim-cmp.
+"     "     local cmp = require'cmp'
 
-    "     -- Set up lspconfig.
-    "     local capabilities = require('cmp_nvim_lsp').default_capabilities()
-    "     -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-    "     require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
-    "         capabilities = capabilities
-    "     }
-    " EOF
-    " augroup nvim_lsp
-    "     autocmd!
-    "     autocmd FileType haskell v:vim.lsp.start({
-    "     \    name = 'haskell-language-server',
-    "     \    cmd = {'haskell-language-server-wrapper', '--lsp'},
-    "     \    root_dir = vim.fs.dirname(vim.fs.find({'.stack.yaml', '.hie-bios', 'BUILD.bazel', 'cabal.config', 'package.yaml'}, { upward = true })[1]),
-    "     \})
-    " augroup END
-endif
+"     "     cmp.setup({
+"     "     snippet = {
+"     "         -- REQUIRED - you must specify a snippet engine
+"     "         expand = function(args)
+"     "         vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+"     "         -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+"     "         -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+"     "         -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+"     "         end,
+"     "     },
+"     "     window = {
+"     "         -- completion = cmp.config.window.bordered(),
+"     "         -- documentation = cmp.config.window.bordered(),
+"     "     },
+"     "     mapping = cmp.mapping.preset.insert({
+"     "     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+"     "     ['<C-f>'] = cmp.mapping.scroll_docs(4),
+"     "     ['<C-Space>'] = cmp.mapping.complete(),
+"     "     ['<C-e>'] = cmp.mapping.abort(),
+"     "     ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+"     "     }),
+"     "     sources = cmp.config.sources({
+"     "     { name = 'nvim_lsp' },
+"     "     { name = 'vsnip' }, -- For vsnip users.
+"     "     -- { name = 'luasnip' }, -- For luasnip users.
+"     "     -- { name = 'ultisnips' }, -- For ultisnips users.
+"     "     -- { name = 'snippy' }, -- For snippy users.
+"     "     }, {
+"     "         { name = 'buffer' },
+"     "     })
+"     "     })
+
+"     "     -- Set configuration for specific filetype.
+"     "     cmp.setup.filetype('gitcommit', {
+"     "         sources = cmp.config.sources({
+"     "         { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+"     "         }, {
+"     "             { name = 'buffer' },
+"     "         })
+"     "         })
+
+"     "     -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+"     "     cmp.setup.cmdline({ '/', '?' }, {
+"     "         mapping = cmp.mapping.preset.cmdline(),
+"     "         sources = {
+"     "             { name = 'buffer' }
+"     "         }
+"     "         })
+
+"     "     -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+"     "     cmp.setup.cmdline(':', {
+"     "         mapping = cmp.mapping.preset.cmdline(),
+"     "         sources = cmp.config.sources({
+"     "         { name = 'path' }
+"     "         }, {
+"     "             { name = 'cmdline' }
+"     "         })
+"     "         })
+
+"     "     -- Set up lspconfig.
+"     "     local capabilities = require('cmp_nvim_lsp').default_capabilities()
+"     "     -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
+"     "     require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
+"     "         capabilities = capabilities
+"     "     }
+"     " EOF
+"     " augroup nvim_lsp
+"     "     autocmd!
+"     "     autocmd FileType haskell v:vim.lsp.start({
+"     "     \    name = 'haskell-language-server',
+"     "     \    cmd = {'haskell-language-server-wrapper', '--lsp'},
+"     "     \    root_dir = vim.fs.dirname(vim.fs.find({'.stack.yaml', '.hie-bios', 'BUILD.bazel', 'cabal.config', 'package.yaml'}, { upward = true })[1]),
+"     "     \})
+"     " augroup END
+" endif
 
 " Highlight stuff
 set fillchars+=vert:\ 
