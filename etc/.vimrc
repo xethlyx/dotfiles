@@ -30,13 +30,16 @@ Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
 call plug#end()
 
-" Fix alt keys in Windows Terminal
-let c='a'
-while c <= 'z'
-    exec "set <A-".c.">=\e".c
-    exec "imap \e".c." <A-".c.">"
-    let c = nr2char(1+char2nr(c))
-endw
+" Fix alt keys in Windows Terminal, but only if not in nvim because it doesn't
+" respect this
+if !has("nvim")
+    let c='a'
+    while c <= 'z'
+        exec "set <A-".c.">=\e".c
+        exec "imap \e".c." <A-".c.">"
+        let c = nr2char(1+char2nr(c))
+    endw
+endif
 
 
 " Note that sometimes syntax highlighting breaks in files with multiline
@@ -103,6 +106,24 @@ let g:netrw_winsize = 75
 let g:netrw_preview = 1
 
 let g:coc_default_semantic_highlight_groups = 1
+" there's room for improvement..
+highlight! link CocSemVariable PreProc
+highlight! link CocSemParameter PreProc
+highlight! link CocSemProperty PreProc
+highlight! link CocSemClass Identifier
+highlight! link CocSemInterface Identifier
+highlight! link CocSemType Identifier
+highlight! link Special Keyword
+
+
+highlight! link typescriptVariable Keyword
+highlight! link typescriptInterfaceName Identifier
+highlight! link typescriptObjectLabel PreProc
+highlight! link typescriptMember PreProc
+
+if has("nvim")
+	highlight! link Conceal Comment
+endif
 
 augroup netrw_setup | au!
     au FileType netrw nmap <buffer> l <CR>
@@ -126,6 +147,8 @@ hi! CocErrorSign guifg=#d1666a
 hi! CocInfoSign guibg=#353b45
 hi! CocWarningSign guifg=#d1cd66
 hi! link CocInlayHint Comment
+hi! link DiagnosticError CocErrorSign 
+hi! link DiagnosticWarn CocWarningSign 
 
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call ShowDocumentation()<CR>
@@ -291,11 +314,11 @@ hi! EndOfBuffer guifg=bg
 
 " Rainbow Parentheses
 
-let g:rainbow#pairs = [['(', ')'], ['[', ']']]
+let g:rainbow#pairs = [['(', ')'], ['[', ']'], ['{', '}']]
 
 augroup rainbow_lisp
   autocmd!
-  autocmd FileType haskell,python RainbowParentheses
+  autocmd FileType haskell,python,typescript,ts RainbowParentheses
 augroup END
 
 command! WhichHi call SynStack()
