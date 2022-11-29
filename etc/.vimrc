@@ -9,16 +9,14 @@ Plug 'jackguo380/vim-lsp-cxx-highlight'
 " endif
 
 if has("nvim")
-    " Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    " lua require('nvim-treesitter.configs').setup { highlight = { enable = true }, indent = { enable = true } }
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    " v:lua require('nvim-treesitter.configs').setup { highlight = { enable = true }, indent = { enable = true } }
     " LINUX ONLY!!
     " Plug 'icedman/nvim-textmate'
     " lua require('nvim-textmate')
+    " Plug 'neovim/nvim-lspconfig'
+    " Plug 'hrsh7th/nvim-cmp'
 endif
-" if has("nvim")
-"     Plug 'neovim/nvim-lspconfig'
-"     " Plug 'hrsh7th/nvim-cmp'
-" endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
 Plug 'itchyny/lightline.vim'
@@ -39,12 +37,12 @@ if !has("nvim")
         exec "imap \e".c." <A-".c.">"
         let c = nr2char(1+char2nr(c))
     endw
+
+    " Note that sometimes syntax highlighting breaks in files with multiline
+    " comments. Can be fixed using :syn sync fromstart. Doesn't occur with
+    " treesitter.
+    autocmd BufEnter :syn sync fromstart
 endif
-
-
-" Note that sometimes syntax highlighting breaks in files with multiline
-" comments. Can be fixed using :syn sync fromstart
-autocmd BufEnter :syn sync fromstart
 
 
 set cursorline
@@ -107,23 +105,24 @@ let g:netrw_preview = 1
 
 let g:coc_default_semantic_highlight_groups = 1
 " there's room for improvement..
-highlight! link CocSemVariable PreProc
-highlight! link CocSemParameter PreProc
-highlight! link CocSemProperty PreProc
-highlight! link CocSemClass Identifier
-highlight! link CocSemInterface Identifier
-highlight! link CocSemType Identifier
+highlight! link CocSemVariable Identifier
+highlight! link CocSemParameter Identifier
+highlight! link CocSemProperty Identifier
+highlight! link CocSemClass Type
+highlight! link CocSemInterface Type
+highlight! link CocSemType Type
 highlight! link Special Keyword
 
-
 highlight! link typescriptVariable Keyword
-highlight! link typescriptInterfaceName Identifier
-highlight! link typescriptObjectLabel PreProc
-highlight! link typescriptMember PreProc
+highlight! link typescriptInterfaceName Type
+highlight! link typescriptObjectLabel Identifier
+highlight! link typescriptMember Identifier
 
-if has("nvim")
-	highlight! link Conceal Comment
-endif
+highlight! link Conceal Comment
+
+:nmap <leader>l :set invlist<cr>
+set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
+" set list listchars=tab:❘⠀,trail:·,extends:»,precedes:«,nbsp:×
 
 augroup netrw_setup | au!
     au FileType netrw nmap <buffer> l <CR>
@@ -147,8 +146,8 @@ hi! CocErrorSign guifg=#d1666a
 hi! CocInfoSign guibg=#353b45
 hi! CocWarningSign guifg=#d1cd66
 hi! link CocInlayHint Comment
-hi! link DiagnosticError CocErrorSign 
-hi! link DiagnosticWarn CocWarningSign 
+hi! link DiagnosticError CocErrorSign
+hi! link DiagnosticWarn CocWarningSign
 
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call ShowDocumentation()<CR>
@@ -220,90 +219,6 @@ command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
 " Add `:OR` command for organize imports of the current buffer.
 command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
-" endif
-
-" if has('nvim')
-"     :lua require'lspconfig'.hls.setup{}
-"     :lua require'lspconfig'.pyright.setup{}
-"     " set completeopt=menu,menuone,noselect
-"     " :lua << EOF
-"     "     -- Set up nvim-cmp.
-"     "     local cmp = require'cmp'
-
-"     "     cmp.setup({
-"     "     snippet = {
-"     "         -- REQUIRED - you must specify a snippet engine
-"     "         expand = function(args)
-"     "         vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-"     "         -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-"     "         -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-"     "         -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-"     "         end,
-"     "     },
-"     "     window = {
-"     "         -- completion = cmp.config.window.bordered(),
-"     "         -- documentation = cmp.config.window.bordered(),
-"     "     },
-"     "     mapping = cmp.mapping.preset.insert({
-"     "     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-"     "     ['<C-f>'] = cmp.mapping.scroll_docs(4),
-"     "     ['<C-Space>'] = cmp.mapping.complete(),
-"     "     ['<C-e>'] = cmp.mapping.abort(),
-"     "     ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-"     "     }),
-"     "     sources = cmp.config.sources({
-"     "     { name = 'nvim_lsp' },
-"     "     { name = 'vsnip' }, -- For vsnip users.
-"     "     -- { name = 'luasnip' }, -- For luasnip users.
-"     "     -- { name = 'ultisnips' }, -- For ultisnips users.
-"     "     -- { name = 'snippy' }, -- For snippy users.
-"     "     }, {
-"     "         { name = 'buffer' },
-"     "     })
-"     "     })
-
-"     "     -- Set configuration for specific filetype.
-"     "     cmp.setup.filetype('gitcommit', {
-"     "         sources = cmp.config.sources({
-"     "         { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-"     "         }, {
-"     "             { name = 'buffer' },
-"     "         })
-"     "         })
-
-"     "     -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-"     "     cmp.setup.cmdline({ '/', '?' }, {
-"     "         mapping = cmp.mapping.preset.cmdline(),
-"     "         sources = {
-"     "             { name = 'buffer' }
-"     "         }
-"     "         })
-
-"     "     -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-"     "     cmp.setup.cmdline(':', {
-"     "         mapping = cmp.mapping.preset.cmdline(),
-"     "         sources = cmp.config.sources({
-"     "         { name = 'path' }
-"     "         }, {
-"     "             { name = 'cmdline' }
-"     "         })
-"     "         })
-
-"     "     -- Set up lspconfig.
-"     "     local capabilities = require('cmp_nvim_lsp').default_capabilities()
-"     "     -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-"     "     require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
-"     "         capabilities = capabilities
-"     "     }
-"     " EOF
-"     " augroup nvim_lsp
-"     "     autocmd!
-"     "     autocmd FileType haskell v:vim.lsp.start({
-"     "     \    name = 'haskell-language-server',
-"     "     \    cmd = {'haskell-language-server-wrapper', '--lsp'},
-"     "     \    root_dir = vim.fs.dirname(vim.fs.find({'.stack.yaml', '.hie-bios', 'BUILD.bazel', 'cabal.config', 'package.yaml'}, { upward = true })[1]),
-"     "     \})
-"     " augroup END
 " endif
 
 " Highlight stuff
