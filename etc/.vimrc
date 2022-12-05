@@ -8,9 +8,14 @@ Plug 'josa42/vim-lightline-coc'
 Plug 'jackguo380/vim-lsp-cxx-highlight'
 " endif
 
+" Plug 'metakirby5/codi.vim'
+
 if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    " v:lua require('nvim-treesitter.configs').setup { highlight = { enable = true }, indent = { enable = true } }
+    Plug 'p00f/nvim-ts-rainbow'
+    Plug 'windwp/nvim-autopairs'
+    Plug 'nvim-tree/nvim-tree.lua'
+    Plug 'nvim-tree/nvim-web-devicons'
     " LINUX ONLY!!
     " Plug 'icedman/nvim-textmate'
     " lua require('nvim-textmate')
@@ -20,9 +25,7 @@ endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
 Plug 'itchyny/lightline.vim'
-Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-commentary' " gc to comment selection, gcc to comment current line
-Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
@@ -120,6 +123,16 @@ highlight! link typescriptMember Identifier
 
 highlight! link Conceal Comment
 
+if has('nvim')
+    highlight! link NvimTreeGitNew SignifySignAdd
+    highlight! link NvimTreeGitDirty SignifySignChange
+    highlight! link NvimTreeGitDeleted SignifySignDelete
+endif
+
+highlight! link DiffAdd SignifySignAdd
+highlight! link DiffChange SignifySignChange
+highlight! link DiffDelete SignifySignDelete
+
 :nmap <leader>l :set invlist<cr>
 set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
 " set list listchars=tab:❘⠀,trail:·,extends:»,precedes:«,nbsp:×
@@ -131,13 +144,85 @@ augroup END
 let g:lightline = {
     \ 'colorscheme': 'deepspace',
     \ 'active': {
-    \     'left': [[  'mode', 'paste' ], [ 'readonly', 'filename', 'modified', 'charvaluehex' ], ['coc_info', 'coc_hints', 'coc_errors', 'coc_warnings', 'coc_ok' ], [ 'coc_status'  ]]
+    \   'left': [
+    \       [ 'mode', 'paste' ],
+    \       [ 'readonly', 'filename' ],
+    \       [ 'coc_error', 'coc_warn' ],
+    \       [ 'git_info' ],
+    \   ],
+    \   'right':[
+    \       [ 'percent' ],
+    \       [ 'lineinfo' ],
+    \       [ 'filetype', 'fileencoding'],
+    \       [ 'blame' ],
+    \   ],
+    \ },
+    \ 'inactive': {
+    \   'left': [
+    \       [ 'mode', 'paste' ],
+    \       [ 'readonly', 'filename' ],
+    \       [ 'coc_status' ],
+    \   ],
+    \   'right': [
+    \       [ 'percent' ],
+    \       [ 'lineinfo' ],
+    \       [ 'filetype', 'fileencoding'],
+    \   ]
+    \ },
+    \ 'component_expand': {
+    \   'coc_error': 'LightlineCocError',
+    \   'coc_warn': 'LightlineCocWarn',
+    \ },
+    \ 'component_function': {
+    \   'filename': 'LightlineFileName',
+    \   'blame': 'LightlineGitBlame',
+    \   'git_info': 'LightlineGitInfo',
+    \ },
+    \ 'component_type': {
+    \   'coc_error': 'error',
+    \   'coc_warn': 'warning',
     \ }
     \ }
+
+function! LightlineCocError()
+    let info = get(b:, 'coc_diagnostic_info', {})
+    if empty(info) | return '' | endif
+    if get(info, 'error', 0)
+        return info['error'] . 'E'
+    endif
+    return ''
+endfunction
+
+function! LightlineCocWarn()
+    let info = get(b:, 'coc_diagnostic_info', {})
+    if empty(info) | return '' | endif
+    if get(info, 'warning', 0)
+        return info['warning'] . 'W'
+    endif
+    return ''
+endfunction
+
+function! LightlineFileName()
+    let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
+    let modified = &modified ? '*' : ''
+    return filename . modified
+endfunction
+
+function! LightlineGitInfo()
+    return get(g:, 'coc_git_status', '') . get(b:, 'coc_git_status', '')
+endfunction
+
+function! LightlineGitBlame()
+    let blame = get(b:, 'coc_git_blame', '')
+    return blame
+endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 " COC stuff                                          "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let g:coc_global_extensions = ["coc-git"]
+
 " if !has("nvim")
 set updatetime=300
 set signcolumn=yes
@@ -227,15 +312,6 @@ hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
 hi! EndOfBuffer guifg=bg
 
-" Rainbow Parentheses
-
-let g:rainbow#pairs = [['(', ')'], ['[', ']'], ['{', '}']]
-
-augroup rainbow_lisp
-  autocmd!
-  autocmd FileType haskell,python,typescript,ts RainbowParentheses
-augroup END
-
 command! WhichHi call SynStack()
 command! WhichHighlight call SynStack()
 " Call using :call SynStack()
@@ -252,4 +328,28 @@ if has('mouse')
     else
         set mouse=nvi
     endif
+endif
+
+if has('nvim')
+    " Remove netrw
+    let g:loaded_netrw = 0
+    let g:loaded_netrwPlugin = 1
+
+    " Use teal syntax highlight for lua files because it behaves better..
+    augroup useTealSyntax
+        autocmd!
+        autocmd FileType lua set filetype=teal
+    augroup END
+
+    " Setup nvim-tree
+    lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } } })
+
+    " Make terminal behave more like vim terminal
+    tnoremap <C-W>N <C-\><C-n>
+
+    " Setup autopairs
+    lua require("nvim-autopairs").setup({})
+
+    " Setup Treesitter
+    lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
 endif
