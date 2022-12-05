@@ -6,7 +6,7 @@ set -o pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
 
-FULL_HISTORY=false
+full_history=false
 
 usage() {
     cat << USAGE
@@ -35,31 +35,32 @@ install-only() (
     fi
 
     cd etc
-    BACKUP="../backup"
-    DATA="../data.lock"
-    for TEMPLATE_FILE in $(find * .[^.]* -type f 2>/dev/null); do
-        TARGET_FILE="$HOME/$TEMPLATE_FILE"
-        if [ -f "$TARGET_FILE" ]; then
-            if [ $TARGET_FILE -ef $TEMPLATE_FILE ]; then
-                printf "skipped '%s'\n" "$TARGET_FILE"
+    backup="../backup"
+    data="../data.lock"
+    for template_file in $(find * .[^.]* -type f 2>/dev/null); do
+        target_file="$HOME/$template_file"
+        if [ -f "$target_file" ]; then
+            if [ $target_file -ef $template_file ]; then
+                printf "skipped '%s'\n" "$target_file"
                 continue
             fi
-            if [ -L $TARGET_FILE ]; then
-                unlink $TARGET_FILE
-                ln $TEMPLATE_FILE $TARGET_FILE
-                printf "relinked '%s'\n" "$TARGET_FILE"
-                echo $TEMPLATE_FILE >> $DATA
+            if [ -L $target_file ]; then
+                unlink $target_file
+                ln $template_file $target_file
+                printf "relinked '%s'\n" "$target_file"
+                echo $template_file >> $data
                 continue
             fi
-            mkdir -p $(dirname $BACKUP/$TEMPLATE_FILE)
-            mv $TARGET_FILE $BACKUP/$TEMPLATE_FILE
-            ln $TEMPLATE_FILE $TARGET_FILE
-            echo $TEMPLATE_FILE >> $DATA
-            printf "overwrote '%s'\n" "$TARGET_FILE"
+            mkdir -p $(dirname $backup/$template_file)
+            mv $target_file $backup/$template_file
+            ln $template_file $target_file
+            echo $template_file >> $data
+            printf "overwrote '%s'\n" "$target_file"
         else
-            ln $TEMPLATE_FILE $TARGET_FILE
-            echo $TEMPLATE_FILE >> $DATA
-            printf "linked '%s'\n" "$TARGET_FILE"
+            mkdir -p $(dirname $target_file)
+            ln $template_file $target_file
+            echo $template_file >> $data
+            printf "linked '%s'\n" "$target_file"
         fi
     done
 )
@@ -89,17 +90,17 @@ uninstall-only() (
 
     cd etc
 
-    while read FILE; do
-        if [ $FILE = "" ]; then continue; fi
-        if [ -f $HOME/$FILE ]; then
-            if [ ! $HOME/$FILE -ef $FILE ]; then
-                printf "skipped '%s': mismatched file\n" "$FILE" 1>&2
+    while read file; do
+        if [ $file = "" ]; then continue; fi
+        if [ -f $HOME/$file ]; then
+            if [ ! $HOME/$file -ef $file ]; then
+                printf "skipped '%s': mismatched file\n" "$file" 1>&2
                 continue
             fi
-            rm $HOME/$FILE
-            printf "removed '%s'\n" "$FILE"
+            rm $HOME/$file
+            printf "removed '%s'\n" "$file"
         else
-            printf "unable to find '%s'\n" "$FILE" 1>&2
+            printf "unable to find '%s'\n" "$file" 1>&2
         fi
     done < ../data.lock
 
@@ -108,25 +109,25 @@ uninstall-only() (
 )
 
 restore-backup() (
-    ENTIRE=true    
+    entire=true
     if [ ! -d "backup" ]; then
         printf "skipped backup restore: nothing to do\n"
         return
     fi
 
     cd backup
-    for BACKUP in $(find * .[^.]* -type f 2>/dev/null); do
-        TARGET="$HOME/$BACKUP"
-        if [ -e $TARGET ]; then
-            ENTIRE=false
-            printf "unable to restore '%s': file kept in place\n" "backup/$BACKUP" 1>&2
+    for backup in $(find * .[^.]* -type f 2>/dev/null); do
+        target="$HOME/$backup"
+        if [ -e $target ]; then
+            entire=false
+            printf "unable to restore '%s': file kept in place\n" "backup/$backup" 1>&2
             continue
         fi
 
-        mv $BACKUP $TARGET
+        mv $backup $target
     done
 
-    if [ ! entire ]; then
+    if [ entire != true ]; then
         printf "unable to restore all files successfully. relevant files are in %s and will need to be cleaned up.\n" "$(pwd)" 1>&2
         exit 1
     fi
@@ -145,18 +146,18 @@ uninstall() {
 upstream() {
     git remote update &>/dev/null
 
-    UPSTREAM=${1:-'@{u}'}
-    LOCAL=$(git rev-parse @)
-    REMOTE=$(git rev-parse "$UPSTREAM")
-    BASE=$(git merge-base @ "$UPSTREAM")
+    upstream=${1:-'@{u}'}
+    local=$(git rev-parse @)
+    remote=$(git rev-parse "$upstream")
+    base=$(git merge-base @ "$upstream")
 
     if [ "$(git diff --stat)" != "" ]; then
         echo "dirty"
-    elif [ $LOCAL = $REMOTE ]; then
+    elif [ $local = $remote ]; then
         echo "up-to-date"
-    elif [ $LOCAL = $BASE ]; then
+    elif [ $local = $base ]; then
         echo "outdated"
-    elif [ $REMOTE = $BASE ]; then
+    elif [ $remote = $base ]; then
         echo "newer than source"
     else
         echo "diverged"
@@ -170,7 +171,7 @@ update() {
     fi
 
     uninstall-only
-    if [ $FULL_HISTORY ]; then
+    if [ $full_history ]; then
         git pull --ff-only
     else
         git pull --depth=1 --ff-only
@@ -180,16 +181,16 @@ update() {
 
 while getopts ':hv' option; do
     case "${option}" in
-        h) 
+        h)
             usage
             exit
             ;;
-        v) 
+        v)
             git log --pretty=format:"version %h ($(upstream))%n(%an, %ar) %s" -n 1
             exit
             ;;
         e)
-            FULL_HISTORY=true
+            full_history=true
             ;;
         *)
             printf "illegal option: -%s\n\n" "$OPTARG" 1>&2
