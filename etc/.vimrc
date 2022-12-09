@@ -312,6 +312,31 @@ command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
 " endif
 
+call coc#config('git', {
+    \    'addGBlameToBufferVar': 'true',
+    \    'addedSign.text': '▍',
+    \    'changedSign.text': '▍',
+    \})
+
+call coc#config('diagnostic', {
+    \    'errorSign': '×',
+    \    'warningSign': '×',
+    \    'hintSign': '×',
+    \    'infoSign': '×',
+    \})
+
+call coc#config('diagnostic', {
+    \    'virtualText': 'true',
+    \    'virtualTextCurrentLineOnly': 'false',
+    \    'virtualTextLines': 1,
+    \})
+
+call coc#config('semanticTokens', {
+    \    'enable': 'true',
+    \    'highlightPriority': 0,
+    \    'filetypes': ['*'],
+    \})
+
 " Highlight stuff
 set fillchars+=vert:\ 
 hi! link VertSplit CursorLine
