@@ -12,6 +12,7 @@ Plug 'jackguo380/vim-lsp-cxx-highlight'
 
 if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    Plug 'nmac427/guess-indent.nvim'
     Plug 'p00f/nvim-ts-rainbow'
     Plug 'windwp/nvim-autopairs'
     Plug 'nvim-tree/nvim-tree.lua'
@@ -47,7 +48,6 @@ if !has("nvim")
     autocmd BufEnter :syn sync fromstart
 endif
 
-
 set cursorline
 set shiftwidth=4
 set tabstop=4
@@ -63,7 +63,7 @@ set history=200
 set ruler
 set wildmenu
 set display=truncate
-set expandtab
+set noexpandtab
 set autoindent
 set smarttab
 set belloff=cursor,backspace
@@ -134,7 +134,7 @@ highlight! link DiffChange SignifySignChange
 highlight! link DiffDelete SignifySignDelete
 
 :nmap <leader>l :set invlist<cr>
-set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
+set list listchars=tab:→\ ,trail:·,extends:»,precedes:«,nbsp:×
 " set list listchars=tab:❘⠀,trail:·,extends:»,precedes:«,nbsp:×
 
 augroup netrw_setup | au!
@@ -153,7 +153,7 @@ let g:lightline = {
     \   'right':[
     \       [ 'percent' ],
     \       [ 'lineinfo' ],
-    \       [ 'filetype', 'fileencoding'],
+    \       [ 'filetype', 'fileencoding', 'indent'],
     \       [ 'blame' ],
     \   ],
     \ },
@@ -177,6 +177,7 @@ let g:lightline = {
     \   'filename': 'LightlineFileName',
     \   'blame': 'LightlineGitBlame',
     \   'git_info': 'LightlineGitInfo',
+    \   'indent': 'LightlineIndent',
     \ },
     \ 'component_type': {
     \   'coc_error': 'error',
@@ -206,6 +207,11 @@ function! LightlineFileName()
     let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
     let modified = &modified ? '*' : ''
     return filename . modified
+endfunction
+
+function! LightlineIndent()
+    let tabtype =  &expandtab ? 'spaces' : 'tabs'
+    return tabtype . ': ' . &tabstop
 endfunction
 
 function! LightlineGitInfo()
@@ -352,4 +358,6 @@ if has('nvim')
 
     " Setup Treesitter
     lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
+
+    lua require('guess-indent').setup()
 endif
