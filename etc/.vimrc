@@ -134,8 +134,8 @@ highlight! link DiffChange SignifySignChange
 highlight! link DiffDelete SignifySignDelete
 
 :nmap <leader>l :set invlist<cr>
-set list listchars=tab:→\ ,trail:·,extends:»,precedes:«,nbsp:×
-" set list listchars=tab:❘⠀,trail:·,extends:»,precedes:«,nbsp:×
+set list listchars=trail:·,extends:»,precedes:«,nbsp:×
+" set list listchars=tab:→\⠀,trail:·,extends:»,precedes:«,nbsp:×
 
 augroup netrw_setup | au!
     au FileType netrw nmap <buffer> l <CR>
@@ -343,6 +343,8 @@ hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
 hi! EndOfBuffer guifg=bg
 
+nnoremap <leader>t :below split +term<cr>
+
 command! WhichHi call SynStack()
 command! WhichHighlight call SynStack()
 " Call using :call SynStack()
@@ -375,8 +377,45 @@ if has('nvim')
     " Setup nvim-tree
     lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } } })
 
+    function! <SID>TermExec(cmd)
+        let b:term_insert = 1
+        execute a:cmd
+    endfunction
+
+    function! s:TermEnter(_)
+        if getbufvar(bufnr(), 'term_insert', 0)
+            startinsert
+            call setbufvar(bufnr(), 'term_insert', 0)
+        endif
+    endfunction
+
     " Make terminal behave more like vim terminal
-    tnoremap <C-W>N <C-\><C-n>
+    " tnoremap <C-W> <C-\><C-n>
+    augroup Term
+        autocmd CmdlineLeave,WinEnter,BufWinEnter * call timer_start(0, function('s:TermEnter'), {})
+    augroup end
+
+    autocmd TermOpen  * startinsert
+    autocmd TermOpen * let b:term_job_finished = 0
+    autocmd TermEnter * if  b:term_job_finished | call feedkeys("\<C-\>\<C-n>") | endif
+    autocmd TermClose * let b:term_job_finished = 1 | call feedkeys("\<C-\>\<C-n>")
+    tnoremap <silent> <C-W>.      <C-W>
+    tnoremap <silent> <C-W><C-.>  <C-W>
+    tnoremap <silent> <C-W><C-\>  <C-\>
+    tnoremap <silent> <C-W>N      <C-\><C-N>
+    tnoremap <silent> <C-W>:      <C-\><C-N>:call <SID>TermExec('call feedkeys(":")')<CR>
+    tnoremap <silent> <C-W><C-W>  <cmd>call <SID>TermExec('wincmd w')<CR>
+    tnoremap <silent> <C-W>h      <cmd>call <SID>TermExec('wincmd h')<CR>
+    tnoremap <silent> <C-W>j      <cmd>call <SID>TermExec('wincmd j')<CR>
+    tnoremap <silent> <C-W>k      <cmd>call <SID>TermExec('wincmd k')<CR>
+    tnoremap <silent> <C-W>l      <cmd>call <SID>TermExec('wincmd l')<CR>
+    tnoremap <silent> <C-W><C-H>  <cmd>call <SID>TermExec('wincmd h')<CR>
+    tnoremap <silent> <C-W><C-J>  <cmd>call <SID>TermExec('wincmd j')<CR>
+    tnoremap <silent> <C-W><C-K>  <cmd>call <SID>TermExec('wincmd k')<CR>
+    tnoremap <silent> <C-W><C-L>  <cmd>call <SID>TermExec('wincmd l')<CR>
+    tnoremap <silent> <C-W>gt     <cmd>call <SID>TermExec('tabn')<CR>
+    tnoremap <silent> <C-W>gT     <cmd>call <SID>TermExec('tabp')<CR>
+    tnoremap <silent> <C-W>q      <cmd>call <SID>TermExec('wincmd q')<CR>
 
     " Setup autopairs
     lua require("nvim-autopairs").setup({})
