@@ -74,6 +74,9 @@ set autoindent
 set smarttab
 set belloff=cursor,backspace
 
+set updatetime=300
+set signcolumn=yes
+
 set number
 set noshowmode
 set laststatus=2
@@ -120,6 +123,7 @@ inoremap <S-Up> <Esc>:m-2<CR>
 inoremap <S-Down> <Esc>:m+<CR>
 
 nnoremap <leader>t :below split +term<cr>
+nmap <leader>l :set invlist<cr>
 
 " }}}
 
@@ -154,11 +158,9 @@ highlight! link DiffAdd SignifySignAdd
 highlight! link DiffChange SignifySignChange
 highlight! link DiffDelete SignifySignDelete
 
-nmap <leader>l :set invlist<cr>
 set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
 " set list listchars=tab:→\⠀,trail:·,extends:»,precedes:«,nbsp:×
 
-" Highlight stuff
 set fillchars+=vert:\ 
 hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
@@ -278,9 +280,6 @@ endfunction
 
 let g:coc_global_extensions = ["coc-git"]
 
-" if !has("nvim")
-set updatetime=300
-set signcolumn=yes
 inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
 hi! CocErrorSign guifg=#d1666a
 hi! CocInfoSign guibg=#353b45
@@ -310,7 +309,6 @@ nmap <f2> <Plug>(coc-rename)
 " Formatting selected code.
 xmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
-
 
 " Applying codeAction to the selected region.
 " Example: `<leader>aap` for current paragraph
@@ -359,7 +357,6 @@ command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
 " Add `:OR` command for organize imports of the current buffer.
 command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
-" endif
 
 call coc#config('git', {
     \    'addGBlameToBufferVar': 'true',
