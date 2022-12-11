@@ -422,7 +422,6 @@ if has('nvim')
     endfunction
 
     " Make terminal behave more like vim terminal
-    " tnoremap <C-W> <C-\><C-n>
     augroup Term
         autocmd CmdlineLeave,WinEnter,BufWinEnter * call timer_start(0, function('s:TermEnter'), {})
     augroup end
@@ -430,7 +429,7 @@ if has('nvim')
     autocmd TermOpen  * startinsert
     autocmd TermOpen * let b:term_job_finished = 0
     autocmd TermEnter * if  b:term_job_finished | call feedkeys("\<C-\>\<C-n>") | endif
-    autocmd TermClose * let b:term_job_finished = 1 | call feedkeys("\<C-\>\<C-n>")
+    autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
     tnoremap <silent> <C-W>.      <C-W>
     tnoremap <silent> <C-W><C-.>  <C-W>
     tnoremap <silent> <C-W><C-\>  <C-\>
