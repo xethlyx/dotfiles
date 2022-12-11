@@ -16,6 +16,10 @@ if has("nvim")
     Plug 'windwp/nvim-autopairs'
     Plug 'nvim-tree/nvim-tree.lua'
     Plug 'nvim-tree/nvim-web-devicons'
+
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+    Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
 endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
@@ -165,6 +169,8 @@ set fillchars+=vert:\
 hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
 hi! EndOfBuffer guifg=bg
+
+hi! link TelescopeBorder NonText
 
 " }}}
 
@@ -449,6 +455,16 @@ if has('nvim')
     tnoremap <silent> <C-W>q      <cmd>call <SID>TermExec('wincmd q')<CR>
 
     " }}}
+
+	" {{{ Telescope
+	nnoremap <C-p> <cmd>Telescope find_files<cr>
+	nnoremap <leader>ff <cmd>Telescope find_files<cr>
+	nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+	nnoremap <leader>fb <cmd>Telescope buffers<cr>
+	nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+    lua require("telescope").setup({ defaults = { file_ignore_patterns = { ".git\\", ".git/", "node_modules\\", "node_modules/" }, mappings = { i = { ["<esc>"] = require("telescope.actions").close, ["<c-d>"] = require('telescope.actions').delete_buffer } } } })
+	" }}}
 
     " {{{ Misc. Plugins
     " Setup autopairs
