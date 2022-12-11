@@ -1,14 +1,13 @@
+" ---------------------------------------
+" Vim Configuration
+" ---------------------------------------
+
+" {{{ Plugins
 call plug#begin()
 
-" set cmdheight=10
-
-" if !has("nvim")
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'josa42/vim-lightline-coc'
 Plug 'jackguo380/vim-lsp-cxx-highlight'
-" endif
-
-" Plug 'metakirby5/codi.vim'
 
 if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
@@ -17,21 +16,17 @@ if has("nvim")
     Plug 'windwp/nvim-autopairs'
     Plug 'nvim-tree/nvim-tree.lua'
     Plug 'nvim-tree/nvim-web-devicons'
-    " LINUX ONLY!!
-    " Plug 'icedman/nvim-textmate'
-    " lua require('nvim-textmate')
-    " Plug 'neovim/nvim-lspconfig'
-    " Plug 'hrsh7th/nvim-cmp'
 endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
 Plug 'itchyny/lightline.vim'
 Plug 'tpope/vim-commentary' " gc to comment selection, gcc to comment current line
-Plug 'ctrlpvim/ctrlp.vim'
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
 call plug#end()
+" }}}
 
+" {{{ Patches
 " Fix alt keys in Windows Terminal, but only if not in nvim because it doesn't
 " respect this
 if !has("nvim")
@@ -48,6 +43,17 @@ if !has("nvim")
     autocmd BufEnter :syn sync fromstart
 endif
 
+if has('mouse')
+    if &term =~ 'xterm'
+        set mouse=a
+    else
+        set mouse=nvi
+    endif
+endif
+
+" }}}
+
+" {{{ Basic Configuration
 set cursorline
 set shiftwidth=4
 set tabstop=4
@@ -68,31 +74,12 @@ set autoindent
 set smarttab
 set belloff=cursor,backspace
 
-inoremap <C-U> <C-G>u<C-U>
-nnoremap <silent><C-L> :let @/ = ""<CR><C-L>
-colorscheme deep-space
-
-nnoremap <A-j> :m .+1<CR>==
-nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <A-j> :m '>+1<CR>gv=gv
-vnoremap <A-k> :m '<-2<CR>gv=gv
-
 set number
 set noshowmode
 set laststatus=2
 
 set ttimeout
 set ttimeoutlen=25
-
-imap <c-j> <down>
-imap <c-k> <up>
-
-nnoremap <S-Up> :m-2<CR>
-nnoremap <S-Down> :m+<CR>
-inoremap <S-Up> <Esc>:m-2<CR>
-inoremap <S-Down> <Esc>:m+<CR>
 
 " Hide ./ directory in :E
 " For some reason this shows?
@@ -105,6 +92,40 @@ let g:netrw_browse_split = 4
 let g:netrw_altv = 1
 let g:netrw_winsize = 75
 let g:netrw_preview = 1
+
+augroup netrw_setup | au!
+    au FileType netrw nmap <buffer> l <CR>
+augroup END
+
+" }}}
+
+" {{{ Basic Keybindings
+
+inoremap <C-U> <C-G>u<C-U>
+nnoremap <silent><C-L> :let @/ = ""<CR><C-L>
+
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+inoremap <A-j> <Esc>:m .+1<CR>==gi
+inoremap <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
+
+imap <c-j> <down>
+imap <c-k> <up>
+
+nnoremap <S-Up> :m-2<CR>
+nnoremap <S-Down> :m+<CR>
+inoremap <S-Up> <Esc>:m-2<CR>
+inoremap <S-Down> <Esc>:m+<CR>
+
+nnoremap <leader>t :below split +term<cr>
+
+" }}}
+
+" {{{ Appearance
+
+colorscheme deep-space
 
 let g:coc_default_semantic_highlight_groups = 1
 " there's room for improvement..
@@ -133,13 +154,41 @@ highlight! link DiffAdd SignifySignAdd
 highlight! link DiffChange SignifySignChange
 highlight! link DiffDelete SignifySignDelete
 
-:nmap <leader>l :set invlist<cr>
-set list listchars=trail:·,extends:»,precedes:«,nbsp:×
+nmap <leader>l :set invlist<cr>
+set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
 " set list listchars=tab:→\⠀,trail:·,extends:»,precedes:«,nbsp:×
 
+" Highlight stuff
+set fillchars+=vert:\ 
+hi! link VertSplit CursorLine
+hi! link netrwTreeBar Comment
+hi! EndOfBuffer guifg=bg
+
+" }}}
+
+" {{{ Utility commands
+
+command! WhichHi call SynStack()
+command! WhichHighlight call SynStack()
+" Call using :call SynStack()
+function! SynStack()
+    if !exists("*synstack")
+        return
+    endif
+    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
 augroup netrw_setup | au!
-    au FileType netrw nmap <buffer> l <CR>
+    au FileType vim set foldmethod=marker
 augroup END
+
+" }}}
+
+" ---------------------------------------
+" Plugin Configuration
+" ---------------------------------------
+
+" {{{ Lightline
 
 let g:lightline = {
     \ 'colorscheme': 'deepspace',
@@ -223,9 +272,9 @@ function! LightlineGitBlame()
     return blame
 endfunction
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" COC stuff                                          "
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" }}}
+
+" {{{ COC
 
 let g:coc_global_extensions = ["coc-git"]
 
@@ -337,36 +386,15 @@ call coc#config('semanticTokens', {
     \    'filetypes': ['*'],
     \})
 
-" Highlight stuff
-set fillchars+=vert:\ 
-hi! link VertSplit CursorLine
-hi! link netrwTreeBar Comment
-hi! EndOfBuffer guifg=bg
+" }}}
 
-nnoremap <leader>t :below split +term<cr>
-
-command! WhichHi call SynStack()
-command! WhichHighlight call SynStack()
-" Call using :call SynStack()
-function! SynStack()
-    if !exists("*synstack")
-        return
-    endif
-    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-endfunc
-
-if has('mouse')
-    if &term =~ 'xterm'
-        set mouse=a
-    else
-        set mouse=nvi
-    endif
-endif
+" ---------------------------------------
+" Neovim Configuration
+" ---------------------------------------
 
 if has('nvim')
-    " Remove netrw
-    let g:loaded_netrw = 0
-    let g:loaded_netrwPlugin = 1
+
+    " {{{ Patches
 
     " Use teal syntax highlight for lua files because it behaves better..
     augroup useTealSyntax
@@ -374,8 +402,15 @@ if has('nvim')
         autocmd FileType lua set filetype=teal
     augroup END
 
-    " Setup nvim-tree
+    " }}}
+
+    " {{{ nvim-tree
+    let g:loaded_netrw = 0
+    let g:loaded_netrwPlugin = 1
     lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } } })
+    " }}}
+
+    " {{{ Neovim Terminal Changes
 
     function! <SID>TermExec(cmd)
         let b:term_insert = 1
@@ -417,6 +452,9 @@ if has('nvim')
     tnoremap <silent> <C-W>gT     <cmd>call <SID>TermExec('tabp')<CR>
     tnoremap <silent> <C-W>q      <cmd>call <SID>TermExec('wincmd q')<CR>
 
+    " }}}
+
+    " {{{ Misc. Plugins
     " Setup autopairs
     lua require("nvim-autopairs").setup({})
 
@@ -424,4 +462,6 @@ if has('nvim')
     lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
 
     lua require('guess-indent').setup()
+    " }}}
+
 endif
