@@ -149,6 +149,7 @@ highlight! link typescriptMember Identifier
 highlight! link Conceal Comment
 
 if has('nvim')
+    highlight! link NvimTreeSpecialFile Operator
     highlight! link NvimTreeGitNew SignifySignAdd
     highlight! link NvimTreeGitDirty SignifySignChange
     highlight! link NvimTreeGitDeleted SignifySignDelete
