@@ -400,10 +400,19 @@ if has('nvim')
 
     " {{{ Patches
 
-    " Use teal syntax highlight for lua files because it behaves better..
-    augroup useTealSyntax
+    " Fix command line in MSYS terminal by escaping slashes \
+    if !empty($MSYSTEM_PREFIX)
+        let &shell = substitute(&shell, '\\\+', '/', 'g')
+    endif
+
+    " Custom luau highlight
+    " lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "~/Coding/tree-sitter-luau", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = true }, filetype = "luau" }
+    lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "git@github.com:xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
+
+    " Use luau highlight for lua files because it behaves better..
+    augroup useLuauSyntax
         autocmd!
-        autocmd FileType lua set filetype=teal
+        autocmd FileType lua set filetype=luau
     augroup END
 
     " }}}
