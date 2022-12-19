@@ -11,6 +11,7 @@ Plug 'jackguo380/vim-lsp-cxx-highlight'
 
 if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    Plug 'nvim-treesitter/playground'
     Plug 'nmac427/guess-indent.nvim'
     Plug 'p00f/nvim-ts-rainbow'
     Plug 'windwp/nvim-autopairs'
@@ -127,6 +128,7 @@ inoremap <S-Up> <Esc>:m-2<CR>
 inoremap <S-Down> <Esc>:m+<CR>
 
 nnoremap <leader>t :below split +term<cr>
+nnoremap <leader>T :tabnew +term<cr>
 nmap <leader>l :set invlist<cr>
 
 " }}}
@@ -204,7 +206,7 @@ let g:lightline = {
     \ 'active': {
     \   'left': [
     \       [ 'mode', 'paste' ],
-    \       [ 'readonly', 'filename' ],
+    \       [ 'cocstatus', 'readonly', 'filename' ],
     \       [ 'coc_error', 'coc_warn' ],
     \       [ 'git_info' ],
     \   ],
@@ -236,6 +238,7 @@ let g:lightline = {
     \   'blame': 'LightlineGitBlame',
     \   'git_info': 'LightlineGitInfo',
     \   'indent': 'LightlineIndent',
+    \   'cocstatus': 'LightlineCocMsg',
     \ },
     \ 'component_type': {
     \   'coc_error': 'error',
@@ -279,6 +282,10 @@ endfunction
 function! LightlineGitBlame()
     let blame = get(b:, 'coc_git_blame', '')
     return blame
+endfunction
+
+function! LightlineCocMsg()
+    return get(g:, 'coc_status', '')
 endfunction
 
 " }}}
@@ -406,8 +413,7 @@ if has('nvim')
     endif
 
     " Custom luau highlight
-    " lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "~/Coding/tree-sitter-luau", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = true }, filetype = "luau" }
-    lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "git@github.com:xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
+    lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "https://github.com/xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
 
     " Use luau highlight for lua files because it behaves better..
     augroup useLuauSyntax
@@ -478,7 +484,19 @@ if has('nvim')
 
     " {{{ Misc. Plugins
     " Setup autopairs
-    lua require("nvim-autopairs").setup({})
+    lua << AUTOPAIRS
+        npairs = require("nvim-autopairs")
+        endwise = require("nvim-autopairs.ts-rule").endwise
+
+        npairs.setup({})
+        npairs.add_rules({
+            -- endwise("then$", "end", "luau", "if_statement"),
+            -- endwise("function.*%(.*%)$", "end", "luau", {"function_declaration", "local_function", "function"})
+            endwise("then$", "end", "luau", nil),
+            endwise("do$", "end", "luau", nil),
+            endwise("function.*%(.*%)$", "end", "luau", nil)
+        })
+AUTOPAIRS
 
     " Setup Treesitter
     lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
