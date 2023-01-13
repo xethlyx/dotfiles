@@ -8,6 +8,8 @@ call plug#begin()
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'josa42/vim-lightline-coc'
 Plug 'jackguo380/vim-lsp-cxx-highlight'
+Plug 'aymericbeaumet/vim-symlink'
+Plug 'moll/vim-bbye'
 
 if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
@@ -17,6 +19,10 @@ if has("nvim")
     Plug 'windwp/nvim-autopairs'
     Plug 'nvim-tree/nvim-tree.lua'
     Plug 'nvim-tree/nvim-web-devicons'
+    Plug 'norcalli/nvim-colorizer.lua'
+
+	Plug 'kevinhwang91/promise-async'
+	Plug 'kevinhwang91/nvim-ufo'
 
     Plug 'nvim-lua/plenary.nvim'
     Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
@@ -56,6 +62,8 @@ if has('mouse')
     endif
 endif
 
+autocmd FileType luau setlocal commentstring=--\ %s
+
 " }}}
 
 " {{{ Basic Configuration
@@ -84,10 +92,14 @@ set signcolumn=yes
 
 set number
 set noshowmode
+set rnu
 set laststatus=2
 
 set ttimeout
 set ttimeoutlen=25
+
+set foldnestmax=1
+set foldminlines=1
 
 " Hide ./ directory in :E
 " For some reason this shows?
@@ -127,8 +139,8 @@ nnoremap <S-Down> :m+<CR>
 inoremap <S-Up> <Esc>:m-2<CR>
 inoremap <S-Down> <Esc>:m+<CR>
 
-nnoremap <leader>t :below split +term<cr>
-nnoremap <leader>T :tabnew +term<cr>
+nnoremap <silent><leader>t :below split +term<cr>
+nnoremap <silent><leader>T :tabnew +term<cr>
 nmap <leader>l :set invlist<cr>
 
 " }}}
@@ -159,6 +171,11 @@ if has('nvim')
     highlight! link NvimTreeGitNew SignifySignAdd
     highlight! link NvimTreeGitDirty SignifySignChange
     highlight! link NvimTreeGitDeleted SignifySignDelete
+
+    highlight! link @type.qualifier Keyword
+    highlight! link @include Keyword
+    highlight! link @namespace Type
+    highlight! link @variable.builtin Keyword
 endif
 
 highlight! link DiffAdd SignifySignAdd
@@ -168,7 +185,7 @@ highlight! link DiffDelete SignifySignDelete
 set list listchars=tab:\ \ ,trail:·,extends:»,precedes:«,nbsp:×
 " set list listchars=tab:→\⠀,trail:·,extends:»,precedes:«,nbsp:×
 
-set fillchars+=vert:\ 
+set fillchars+=vert:\ ,fold:\ 
 hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
 hi! EndOfBuffer guifg=bg
@@ -181,6 +198,10 @@ hi! link TelescopeBorder NonText
 
 command! WhichHi call SynStack()
 command! WhichHighlight call SynStack()
+
+command! VC e ~/dotfiles/etc/.vimrc
+command! VimConfig e ~/dotfiles/etc/.vimrc
+
 " Call using :call SynStack()
 function! SynStack()
     if !exists("*synstack")
@@ -295,12 +316,14 @@ endfunction
 let g:coc_global_extensions = ["coc-git"]
 
 inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
-hi! CocErrorSign guifg=#d1666a
-hi! CocInfoSign guibg=#353b45
-hi! CocWarningSign guifg=#d1cd66
+hi! CocErrorSign guifg=#b15e7c
+hi! CocInfoSign guifg=#51617d
+hi! CocWarningSign guifg=#b5a262
 hi! link CocInlayHint Comment
 hi! link DiagnosticError CocErrorSign
 hi! link DiagnosticWarn CocWarningSign
+hi! link DiagnosticInfo CocInfoSign
+hi! link DiagnosticHint CocInfoSign
 
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call ShowDocumentation()<CR>
@@ -331,6 +354,7 @@ nmap <leader>a  <Plug>(coc-codeaction-selected)
 
 " Remap keys for applying codeAction to the current buffer.
 nmap <leader>ac  <Plug>(coc-codeaction)
+nmap <leader>al  <Plug>(coc-codeaction-cursor)
 " Apply AutoFix to problem on the current line.
 nmap <leader>qf  <Plug>(coc-fix-current)
 
@@ -421,12 +445,18 @@ if has('nvim')
         autocmd FileType lua set filetype=luau
     augroup END
 
+    augroup luauFolds
+        autocmd!
+        autocmd FileType luau setlocal foldmethod=expr
+        autocmd FileType luau setlocal foldexpr=nvim_treesitter#foldexpr()
+        autocmd BufReadPost,FileReadPost *.lua normal zR
+    augroup END
     " }}}
 
     " {{{ nvim-tree
     let g:loaded_netrw = 0
     let g:loaded_netrwPlugin = 1
-    lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } } })
+    lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } }, filesystem_watchers = { ignore_dirs = { "target" } } })
     " }}}
 
     " {{{ Neovim Terminal Changes
@@ -467,17 +497,26 @@ if has('nvim')
     tnoremap <silent> <C-W><C-K>  <cmd>call <SID>TermExec('wincmd k')<CR>
     tnoremap <silent> <C-W><C-L>  <cmd>call <SID>TermExec('wincmd l')<CR>
     tnoremap <silent> <C-W>gt     <cmd>call <SID>TermExec('tabn')<CR>
-    tnoremap <silent> <C-W>gT     <cmd>call <SID>TermExec('tabp')<CR>
+    tnoremap <silent> <C-W>1gt    <cmd>call <SID>TermExec('tabn 1')<CR>
+    tnoremap <silent> <C-W>2gt    <cmd>call <SID>TermExec('tabn 2')<CR>
+    tnoremap <silent> <C-W>3gt    <cmd>call <SID>TermExec('tabn 3')<CR>
+    tnoremap <silent> <C-W>4gt    <cmd>call <SID>TermExec('tabn 4')<CR>
+    tnoremap <silent> <C-W>5gt    <cmd>call <SID>TermExec('tabn 5')<CR>
+    tnoremap <silent> <C-W>6gt    <cmd>call <SID>TermExec('tabn 6')<CR>
+    tnoremap <silent> <C-W>7gt    <cmd>call <SID>TermExec('tabn 7')<CR>
+    tnoremap <silent> <C-W>8gt    <cmd>call <SID>TermExec('tabn 8')<CR>
+    tnoremap <silent> <C-W>9gt    <cmd>call <SID>TermExec('tabn 9')<CR>
+    tnoremap <silent> <C-W>T      <cmd>call <SID>TermExec('wincmd T')<CR>
     tnoremap <silent> <C-W>q      <cmd>call <SID>TermExec('wincmd q')<CR>
 
     " }}}
 
-	" {{{ Telescope
-	nnoremap <C-p> <cmd>Telescope find_files<cr>
-	nnoremap <leader>ff <cmd>Telescope find_files<cr>
-	nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-	nnoremap <leader>fb <cmd>Telescope buffers<cr>
-	nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+    " {{{ Telescope
+	nnoremap <silent> <C-p> <cmd>Telescope find_files<cr>
+	nnoremap <silent> <leader>ff <cmd>Telescope find_files<cr>
+	nnoremap <silent> <leader>fg <cmd>Telescope live_grep<cr>
+	nnoremap <silent> <leader>fb <cmd>Telescope buffers<cr>
+	nnoremap <silent> <leader>fh <cmd>Telescope help_tags<cr>
 
     lua require("telescope").setup({ defaults = { file_ignore_patterns = { ".git\\", ".git/", "node_modules\\", "node_modules/" }, mappings = { i = { ["<esc>"] = require("telescope.actions").close, ["<c-d>"] = require('telescope.actions').delete_buffer } } } })
 	" }}}
@@ -502,6 +541,53 @@ AUTOPAIRS
     lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
 
     lua require('guess-indent').setup()
+
+    lua require('colorizer').setup()
+
+	set foldcolumn=0
+	set foldlevel=99
+	set foldlevelstart=99
+
+	nnoremap <silent> zR :lua require("ufo").openAllFolds()<cr>
+	nnoremap <silent> zM :lua require("ufo").closeAllFolds()<cr>
+
+    lua << UFO
+        local function handler(virtText, lnum, endLnum, width, truncate)
+            local newVirtText = {}
+            local suffix = ('  %d '):format(endLnum - lnum)
+            local sufWidth = vim.fn.strdisplaywidth(suffix)
+            local targetWidth = width - sufWidth
+            local curWidth = 0
+            for _, chunk in ipairs(virtText) do
+                local chunkText = chunk[1]
+                local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                if targetWidth > curWidth + chunkWidth then
+                    table.insert(newVirtText, chunk)
+                else
+                    chunkText = truncate(chunkText, targetWidth - curWidth)
+                    local hlGroup = chunk[2]
+                    table.insert(newVirtText, {chunkText, hlGroup})
+                    chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                    -- str width returned from truncate() may less than 2nd argument, need padding
+                    if curWidth + chunkWidth < targetWidth then
+                        suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+                    end
+                    break
+                end
+                curWidth = curWidth + chunkWidth
+            end
+            table.insert(newVirtText, {suffix, 'Folded'})
+            return newVirtText
+        end
+
+        local function providerSelector(bufnr, filetype, buftype)
+            return { 'tree-sitter', 'indent' }
+        end
+
+        require('ufo').setup({ providerSelector = providerSelector, fold_virt_text_handler = handler })
+UFO
+
+
     " }}}
 
 endif
