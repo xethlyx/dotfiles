@@ -15,7 +15,7 @@ if has("nvim")
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
     Plug 'nvim-treesitter/playground'
     Plug 'nmac427/guess-indent.nvim'
-    Plug 'p00f/nvim-ts-rainbow'
+    Plug 'mrjones2014/nvim-ts-rainbow'
     Plug 'windwp/nvim-autopairs'
     Plug 'nvim-tree/nvim-tree.lua'
     Plug 'nvim-tree/nvim-web-devicons'
