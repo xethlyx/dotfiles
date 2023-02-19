@@ -12,21 +12,21 @@ Plug 'aymericbeaumet/vim-symlink'
 Plug 'moll/vim-bbye'
 
 if has("nvim")
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    Plug 'nvim-treesitter/playground'
-    Plug 'nmac427/guess-indent.nvim'
-    Plug 'mrjones2014/nvim-ts-rainbow'
-    Plug 'windwp/nvim-autopairs'
-    Plug 'nvim-tree/nvim-tree.lua'
-    Plug 'nvim-tree/nvim-web-devicons'
-    Plug 'norcalli/nvim-colorizer.lua'
+	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+	Plug 'nvim-treesitter/playground'
+	Plug 'nmac427/guess-indent.nvim'
+	Plug 'mrjones2014/nvim-ts-rainbow'
+	Plug 'windwp/nvim-autopairs'
+	Plug 'nvim-tree/nvim-tree.lua'
+	Plug 'nvim-tree/nvim-web-devicons'
+	Plug 'norcalli/nvim-colorizer.lua'
 
 	Plug 'kevinhwang91/promise-async'
 	Plug 'kevinhwang91/nvim-ufo'
 
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-    Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
+	Plug 'nvim-lua/plenary.nvim'
+	Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+	Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
 endif
 
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
@@ -41,28 +41,29 @@ call plug#end()
 " Fix alt keys in Windows Terminal, but only if not in nvim because it doesn't
 " respect this
 if !has("nvim")
-    let c='a'
-    while c <= 'z'
-        exec "set <A-".c.">=\e".c
-        exec "imap \e".c." <A-".c.">"
-        let c = nr2char(1+char2nr(c))
-    endw
+	let c='a'
+	while c <= 'z'
+		exec "set <A-".c.">=\e".c
+		exec "imap \e".c." <A-".c.">"
+		let c = nr2char(1+char2nr(c))
+	endw
 
-    " Note that sometimes syntax highlighting breaks in files with multiline
-    " comments. Can be fixed using :syn sync fromstart. Doesn't occur with
-    " treesitter.
-    autocmd BufEnter :syn sync fromstart
+	" Note that sometimes syntax highlighting breaks in files with multiline
+	" comments. Can be fixed using :syn sync fromstart. Doesn't occur with
+	" treesitter.
+	autocmd BufEnter :syn sync fromstart
 endif
 
 if has('mouse')
-    if &term =~ 'xterm'
-        set mouse=a
-    else
-        set mouse=nvi
-    endif
+	if &term =~ 'xterm'
+		set mouse=a
+	else
+		set mouse=nvi
+	endif
 endif
 
 autocmd FileType luau setlocal commentstring=--\ %s
+autocmd FileType c setlocal commentstring=//\ %s
 
 " }}}
 
@@ -114,7 +115,7 @@ let g:netrw_winsize = 75
 let g:netrw_preview = 1
 
 augroup netrw_setup | au!
-    au FileType netrw nmap <buffer> l <CR>
+	au FileType netrw nmap <buffer> l <CR>
 augroup END
 
 " }}}
@@ -143,6 +144,27 @@ nnoremap <silent><leader>t :below split +term<cr>
 nnoremap <silent><leader>T :tabnew +term<cr>
 nmap <leader>l :set invlist<cr>
 
+nnoremap <F3> :below split +term<cr>
+nnoremap <S-F3> :tabnew +term<cr>
+
+" Remapped caps lock keybindings
+
+nnoremap <A-Left> <C-W>h
+nnoremap <A-Down> <C-W>j
+nnoremap <A-Up> <C-W>k
+nnoremap <A-Right> <C-W>l
+nnoremap <A-i> gT
+nnoremap <A-o> gt
+nnoremap <A-u> <C-W>q
+
+inoremap <A-Left> <C-W>h
+inoremap <A-Down> <C-W>j
+inoremap <A-Up> <C-W>k
+inoremap <A-Right> <C-W>l
+inoremap <A-i> gT
+inoremap <A-o> gt
+inoremap <A-u> <C-W>q
+
 " }}}
 
 " {{{ Appearance
@@ -167,15 +189,15 @@ highlight! link typescriptMember Identifier
 highlight! link Conceal Comment
 
 if has('nvim')
-    highlight! link NvimTreeSpecialFile Operator
-    highlight! link NvimTreeGitNew SignifySignAdd
-    highlight! link NvimTreeGitDirty SignifySignChange
-    highlight! link NvimTreeGitDeleted SignifySignDelete
+	highlight! link NvimTreeSpecialFile Operator
+	highlight! link NvimTreeGitNew SignifySignAdd
+	highlight! link NvimTreeGitDirty SignifySignChange
+	highlight! link NvimTreeGitDeleted SignifySignDelete
 
-    highlight! link @type.qualifier Keyword
-    highlight! link @include Keyword
-    highlight! link @namespace Type
-    highlight! link @variable.builtin Keyword
+	highlight! link @type.qualifier Keyword
+	highlight! link @include Keyword
+	highlight! link @namespace Type
+	highlight! link @variable.builtin Keyword
 endif
 
 highlight! link DiffAdd SignifySignAdd
@@ -204,14 +226,14 @@ command! VimConfig e ~/dotfiles/etc/.vimrc
 
 " Call using :call SynStack()
 function! SynStack()
-    if !exists("*synstack")
-        return
-    endif
-    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+	if !exists("*synstack")
+		return
+	endif
+	echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
 
 augroup netrw_setup | au!
-    au FileType vim set foldmethod=marker
+	au FileType vim set foldmethod=marker
 augroup END
 
 " }}}
@@ -223,90 +245,90 @@ augroup END
 " {{{ Lightline
 
 let g:lightline = {
-    \ 'colorscheme': 'deepspace',
-    \ 'active': {
-    \   'left': [
-    \       [ 'mode', 'paste' ],
-    \       [ 'cocstatus', 'readonly', 'filename' ],
-    \       [ 'coc_error', 'coc_warn' ],
-    \       [ 'git_info' ],
-    \   ],
-    \   'right':[
-    \       [ 'percent' ],
-    \       [ 'lineinfo' ],
-    \       [ 'filetype', 'fileencoding', 'indent'],
-    \       [ 'blame' ],
-    \   ],
-    \ },
-    \ 'inactive': {
-    \   'left': [
-    \       [ 'mode', 'paste' ],
-    \       [ 'readonly', 'filename' ],
-    \       [ 'coc_status' ],
-    \   ],
-    \   'right': [
-    \       [ 'percent' ],
-    \       [ 'lineinfo' ],
-    \       [ 'filetype', 'fileencoding'],
-    \   ]
-    \ },
-    \ 'component_expand': {
-    \   'coc_error': 'LightlineCocError',
-    \   'coc_warn': 'LightlineCocWarn',
-    \ },
-    \ 'component_function': {
-    \   'filename': 'LightlineFileName',
-    \   'blame': 'LightlineGitBlame',
-    \   'git_info': 'LightlineGitInfo',
-    \   'indent': 'LightlineIndent',
-    \   'cocstatus': 'LightlineCocMsg',
-    \ },
-    \ 'component_type': {
-    \   'coc_error': 'error',
-    \   'coc_warn': 'warning',
-    \ }
-    \ }
+	\ 'colorscheme': 'deepspace',
+	\ 'active': {
+	\   'left': [
+	\	   [ 'mode', 'paste' ],
+	\	   [ 'cocstatus', 'readonly', 'filename' ],
+	\	   [ 'coc_error', 'coc_warn' ],
+	\	   [ 'git_info' ],
+	\   ],
+	\   'right':[
+	\	   [ 'percent' ],
+	\	   [ 'lineinfo' ],
+	\	   [ 'filetype', 'fileencoding', 'indent'],
+	\	   [ 'blame' ],
+	\   ],
+	\ },
+	\ 'inactive': {
+	\   'left': [
+	\	   [ 'mode', 'paste' ],
+	\	   [ 'readonly', 'filename' ],
+	\	   [ 'coc_status' ],
+	\   ],
+	\   'right': [
+	\	   [ 'percent' ],
+	\	   [ 'lineinfo' ],
+	\	   [ 'filetype', 'fileencoding'],
+	\   ]
+	\ },
+	\ 'component_expand': {
+	\   'coc_error': 'LightlineCocError',
+	\   'coc_warn': 'LightlineCocWarn',
+	\ },
+	\ 'component_function': {
+	\   'filename': 'LightlineFileName',
+	\   'blame': 'LightlineGitBlame',
+	\   'git_info': 'LightlineGitInfo',
+	\   'indent': 'LightlineIndent',
+	\   'cocstatus': 'LightlineCocMsg',
+	\ },
+	\ 'component_type': {
+	\   'coc_error': 'error',
+	\   'coc_warn': 'warning',
+	\ }
+	\ }
 
 function! LightlineCocError()
-    let info = get(b:, 'coc_diagnostic_info', {})
-    if empty(info) | return '' | endif
-    if get(info, 'error', 0)
-        return info['error'] . 'E'
-    endif
-    return ''
+	let info = get(b:, 'coc_diagnostic_info', {})
+	if empty(info) | return '' | endif
+	if get(info, 'error', 0)
+		return info['error'] . 'E'
+	endif
+	return ''
 endfunction
 
 function! LightlineCocWarn()
-    let info = get(b:, 'coc_diagnostic_info', {})
-    if empty(info) | return '' | endif
-    if get(info, 'warning', 0)
-        return info['warning'] . 'W'
-    endif
-    return ''
+	let info = get(b:, 'coc_diagnostic_info', {})
+	if empty(info) | return '' | endif
+	if get(info, 'warning', 0)
+		return info['warning'] . 'W'
+	endif
+	return ''
 endfunction
 
 function! LightlineFileName()
-    let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
-    let modified = &modified ? '*' : ''
-    return filename . modified
+	let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
+	let modified = &modified ? '*' : ''
+	return filename . modified
 endfunction
 
 function! LightlineIndent()
-    let tabtype =  &expandtab ? 'spaces' : 'tabs'
-    return tabtype . ': ' . &tabstop
+	let tabtype =  &expandtab ? 'spaces' : 'tabs'
+	return tabtype . ': ' . &tabstop
 endfunction
 
 function! LightlineGitInfo()
-    return get(g:, 'coc_git_status', '') . get(b:, 'coc_git_status', '')
+	return get(g:, 'coc_git_status', '') . get(b:, 'coc_git_status', '')
 endfunction
 
 function! LightlineGitBlame()
-    let blame = get(b:, 'coc_git_blame', '')
-    return blame
+	let blame = get(b:, 'coc_git_blame', '')
+	return blame
 endfunction
 
 function! LightlineCocMsg()
-    return get(g:, 'coc_status', '')
+	return get(g:, 'coc_status', '')
 endfunction
 
 " }}}
@@ -329,11 +351,11 @@ hi! link DiagnosticHint CocInfoSign
 nnoremap <silent> K :call ShowDocumentation()<CR>
 
 function! ShowDocumentation()
-    if CocAction('hasProvider', 'hover')
-        call CocActionAsync('doHover')
-    else
-        call feedkeys('K', 'in')
-    endif
+	if CocAction('hasProvider', 'hover')
+		call CocActionAsync('doHover')
+	else
+		call feedkeys('K', 'in')
+	endif
 endfunction
 
 " Highlight the symbol and its references when holding the cursor.
@@ -374,12 +396,12 @@ omap ac <Plug>(coc-classobj-a)
 
 " Remap <C-f> and <C-b> for scroll float windows/popups.
 if has('nvim-0.4.0') || has('patch-8.2.0750')
-    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+	nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+	nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+	inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+	inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+	vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+	vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 endif
 
 " Use CTRL-S for selections ranges.
@@ -391,35 +413,35 @@ xmap <silent> <C-s> <Plug>(coc-range-select)
 command! -nargs=0 Format :call CocActionAsync('format')
 
 " Add `:Fold` command to fold current buffer.
-command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+command! -nargs=? Fold :call	 CocAction('fold', <f-args>)
 
 " Add `:OR` command for organize imports of the current buffer.
-command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
+command! -nargs=0 OR   :call	 CocActionAsync('runCommand', 'editor.action.organizeImport')
 
 call coc#config('git', {
-    \    'addGBlameToBufferVar': 'true',
-    \    'addedSign.text': '▍',
-    \    'changedSign.text': '▍',
-    \})
+	\	'addGBlameToBufferVar': 'true',
+	\	'addedSign.text': '▍',
+	\	'changedSign.text': '▍',
+	\})
 
 call coc#config('diagnostic', {
-    \    'errorSign': '×',
-    \    'warningSign': '×',
-    \    'hintSign': '×',
-    \    'infoSign': '×',
-    \})
+	\	'errorSign': '×',
+	\	'warningSign': '×',
+	\	'hintSign': '×',
+	\	'infoSign': '×',
+	\})
 
 call coc#config('diagnostic', {
-    \    'virtualText': 'true',
-    \    'virtualTextCurrentLineOnly': 'false',
-    \    'virtualTextLines': 1,
-    \})
+	\	'virtualText': 'true',
+	\	'virtualTextCurrentLineOnly': 'false',
+	\	'virtualTextLines': 1,
+	\})
 
 call coc#config('semanticTokens', {
-    \    'enable': 'true',
-    \    'highlightPriority': 0,
-    \    'filetypes': ['*'],
-    \})
+	\	'enable': 'true',
+	\	'highlightPriority': 0,
+	\	'filetypes': ['*'],
+	\})
 
 " }}}
 
@@ -429,121 +451,129 @@ call coc#config('semanticTokens', {
 
 if has('nvim')
 
-    " {{{ Patches
+	" {{{ Patches
 
-    " Fix command line in MSYS terminal by escaping slashes \
-    if !empty($MSYSTEM_PREFIX)
-        let &shell = substitute(&shell, '\\\+', '/', 'g')
-    endif
+	" Fix command line in MSYS terminal by escaping slashes \
+	if !empty($MSYSTEM_PREFIX)
+		let &shell = substitute(&shell, '\\\+', '/', 'g')
+	endif
 
-    " Custom luau highlight
-    lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "https://github.com/xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
+	" Custom luau highlight
+	lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "https://github.com/xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
 
-    " Use luau highlight for lua files because it behaves better..
-    augroup useLuauSyntax
-        autocmd!
-        autocmd FileType lua set filetype=luau
-    augroup END
+	" Use luau highlight for lua files because it behaves better..
+	augroup useLuauSyntax
+		autocmd!
+		autocmd FileType lua set filetype=luau
+	augroup END
 
-    augroup luauFolds
-        autocmd!
-        autocmd FileType luau setlocal foldmethod=expr
-        autocmd FileType luau setlocal foldexpr=nvim_treesitter#foldexpr()
-        autocmd BufReadPost,FileReadPost *.lua normal zR
-    augroup END
-    " }}}
+	augroup luauFolds
+		autocmd!
+		autocmd FileType luau setlocal foldmethod=expr
+		autocmd FileType luau setlocal foldexpr=nvim_treesitter#foldexpr()
+		autocmd BufReadPost,FileReadPost *.lua normal zR
+	augroup END
+	" }}}
 
-    " {{{ nvim-tree
-    let g:loaded_netrw = 0
-    let g:loaded_netrwPlugin = 1
-    lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } }, filesystem_watchers = { ignore_dirs = { "target" } } })
-    " }}}
+	" {{{ nvim-tree
+	let g:loaded_netrw = 0
+	let g:loaded_netrwPlugin = 1
+	lua require("nvim-tree").setup({ renderer = { icons = { glyphs = { git = { unstaged = "⬤", staged = "⬤", untracked = "⬤", deleted = "⬤", renamed = "⬤", unmerged = "⬤" } } } }, filesystem_watchers = { ignore_dirs = { "target" } } })
+	" }}}
 
-    " {{{ Neovim Terminal Changes
+	" {{{ Neovim Terminal Changes
 
-    function! <SID>TermExec(cmd)
-        let b:term_insert = 1
-        execute a:cmd
-    endfunction
+	function! <SID>TermExec(cmd)
+		let b:term_insert = 1
+		execute a:cmd
+	endfunction
 
-    function! s:TermEnter(_)
-        if getbufvar(bufnr(), 'term_insert', 0)
-            startinsert
-            call setbufvar(bufnr(), 'term_insert', 0)
-        endif
-    endfunction
+	function! s:TermEnter(_)
+		if getbufvar(bufnr(), 'term_insert', 0)
+			startinsert
+			call setbufvar(bufnr(), 'term_insert', 0)
+		endif
+	endfunction
 
-    " Make terminal behave more like vim terminal
-    augroup Term
-        autocmd CmdlineLeave,WinEnter,BufWinEnter * call timer_start(0, function('s:TermEnter'), {})
-    augroup end
+	" Make terminal behave more like vim terminal
+	augroup Term
+		autocmd CmdlineLeave,WinEnter,BufWinEnter * call timer_start(0, function('s:TermEnter'), {})
+	augroup end
 
-    autocmd TermOpen * startinsert
-    autocmd TermOpen * let b:term_job_finished = 0
-    autocmd TermOpen * setlocal nonumber norelativenumber
-    autocmd TermEnter * if  b:term_job_finished | call feedkeys("\<C-\>\<C-n>") | endif
-    autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
-    tnoremap <silent> <C-W>.      <C-W>
-    tnoremap <silent> <C-W><C-.>  <C-W>
-    tnoremap <silent> <C-W><C-\>  <C-\>
-    tnoremap <silent> <C-W>N      <C-\><C-N>
-    tnoremap <silent> <C-W>:      <C-\><C-N>:call <SID>TermExec('call feedkeys(":")')<CR>
-    tnoremap <silent> <C-W><C-W>  <cmd>call <SID>TermExec('wincmd w')<CR>
-    tnoremap <silent> <C-W>h      <cmd>call <SID>TermExec('wincmd h')<CR>
-    tnoremap <silent> <C-W>j      <cmd>call <SID>TermExec('wincmd j')<CR>
-    tnoremap <silent> <C-W>k      <cmd>call <SID>TermExec('wincmd k')<CR>
-    tnoremap <silent> <C-W>l      <cmd>call <SID>TermExec('wincmd l')<CR>
-    tnoremap <silent> <C-W><C-H>  <cmd>call <SID>TermExec('wincmd h')<CR>
-    tnoremap <silent> <C-W><C-J>  <cmd>call <SID>TermExec('wincmd j')<CR>
-    tnoremap <silent> <C-W><C-K>  <cmd>call <SID>TermExec('wincmd k')<CR>
-    tnoremap <silent> <C-W><C-L>  <cmd>call <SID>TermExec('wincmd l')<CR>
-    tnoremap <silent> <C-W>gt     <cmd>call <SID>TermExec('tabn')<CR>
-    tnoremap <silent> <C-W>1gt    <cmd>call <SID>TermExec('tabn 1')<CR>
-    tnoremap <silent> <C-W>2gt    <cmd>call <SID>TermExec('tabn 2')<CR>
-    tnoremap <silent> <C-W>3gt    <cmd>call <SID>TermExec('tabn 3')<CR>
-    tnoremap <silent> <C-W>4gt    <cmd>call <SID>TermExec('tabn 4')<CR>
-    tnoremap <silent> <C-W>5gt    <cmd>call <SID>TermExec('tabn 5')<CR>
-    tnoremap <silent> <C-W>6gt    <cmd>call <SID>TermExec('tabn 6')<CR>
-    tnoremap <silent> <C-W>7gt    <cmd>call <SID>TermExec('tabn 7')<CR>
-    tnoremap <silent> <C-W>8gt    <cmd>call <SID>TermExec('tabn 8')<CR>
-    tnoremap <silent> <C-W>9gt    <cmd>call <SID>TermExec('tabn 9')<CR>
-    tnoremap <silent> <C-W>T      <cmd>call <SID>TermExec('wincmd T')<CR>
-    tnoremap <silent> <C-W>q      <cmd>call <SID>TermExec('wincmd q')<CR>
+	autocmd TermOpen * startinsert
+	autocmd TermOpen * let b:term_job_finished = 0
+	autocmd TermOpen * setlocal nonumber norelativenumber
+	autocmd TermEnter * if  b:term_job_finished | call feedkeys("\<C-\>\<C-n>") | endif
+	autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
+	" tnoremap <silent> <C-W>. <C-W>
+	" tnoremap <silent> <C-W><C-.> <C-W>
+	" tnoremap <silent> <C-W><C-\> <C-\>
+	" tnoremap <silent> <C-W>N <C-\><C-N>
+	" tnoremap <silent> <C-W>: <C-\><C-N>:call <SID>TermExec('call feedkeys(":")')<CR>
+	" tnoremap <silent> <C-W><C-W> <cmd>call <SID>TermExec('wincmd w')<CR>
+	" tnoremap <silent> <C-W>h <cmd>call <SID>TermExec('wincmd h')<CR>
+	" tnoremap <silent> <C-W>j <cmd>call <SID>TermExec('wincmd j')<CR>
+	" tnoremap <silent> <C-W>k <cmd>call <SID>TermExec('wincmd k')<CR>
+	" tnoremap <silent> <C-W>l <cmd>call <SID>TermExec('wincmd l')<CR>
+	" tnoremap <silent> <C-W><C-H> <cmd>call <SID>TermExec('wincmd h')<CR>
+	" tnoremap <silent> <C-W><C-J> <cmd>call <SID>TermExec('wincmd j')<CR>
+	" tnoremap <silent> <C-W><C-K> <cmd>call <SID>TermExec('wincmd k')<CR>
+	" tnoremap <silent> <C-W><C-L> <cmd>call <SID>TermExec('wincmd l')<CR>
+	" tnoremap <silent> <C-W>gt <cmd>call <SID>TermExec('tabn')<CR>
+	" tnoremap <silent> <C-W>1gt <cmd>call <SID>TermExec('tabn 1')<CR>
+	" tnoremap <silent> <C-W>2gt <cmd>call <SID>TermExec('tabn 2')<CR>
+	" tnoremap <silent> <C-W>3gt <cmd>call <SID>TermExec('tabn 3')<CR>
+	" tnoremap <silent> <C-W>4gt <cmd>call <SID>TermExec('tabn 4')<CR>
+	" tnoremap <silent> <C-W>5gt <cmd>call <SID>TermExec('tabn 5')<CR>
+	" tnoremap <silent> <C-W>6gt <cmd>call <SID>TermExec('tabn 6')<CR>
+	" tnoremap <silent> <C-W>7gt <cmd>call <SID>TermExec('tabn 7')<CR>
+	" tnoremap <silent> <C-W>8gt <cmd>call <SID>TermExec('tabn 8')<CR>
+	" tnoremap <silent> <C-W>9gt <cmd>call <SID>TermExec('tabn 9')<CR>
+	" tnoremap <silent> <C-W>T <cmd>call <SID>TermExec('wincmd T')<CR>
+	" tnoremap <silent> <C-W>q <cmd>call <SID>TermExec('wincmd q')<CR>
 
-    " }}}
+	tnoremap <silent> <A-Left> <cmd>call <SID>TermExec('wincmd h')<CR>
+	tnoremap <silent> <A-Up> <cmd>call <SID>TermExec('wincmd k')<CR>
+	tnoremap <silent> <A-Down> <cmd>call <SID>TermExec('wincmd j')<CR>
+	tnoremap <silent> <A-Right> <cmd>call <SID>TermExec('wincmd l')<CR>
+	tnoremap <silent> <A-i> <cmd>call <SID>TermExec('tabN')<CR>
+	tnoremap <silent> <A-o> <cmd>call <SID>TermExec('tabn')<CR>
+	tnoremap <silent> <A-u> <cmd>call <SID>TermExec('bd!')<CR>
 
-    " {{{ Telescope
+	" }}}
+
+	" {{{ Telescope
 	nnoremap <silent> <C-p> <cmd>Telescope find_files<cr>
 	nnoremap <silent> <leader>ff <cmd>Telescope find_files<cr>
 	nnoremap <silent> <leader>fg <cmd>Telescope live_grep<cr>
 	nnoremap <silent> <leader>fb <cmd>Telescope buffers<cr>
 	nnoremap <silent> <leader>fh <cmd>Telescope help_tags<cr>
 
-    lua require("telescope").setup({ defaults = { file_ignore_patterns = { ".git\\", ".git/", "node_modules\\", "node_modules/" }, mappings = { i = { ["<esc>"] = require("telescope.actions").close, ["<c-d>"] = require('telescope.actions').delete_buffer } } } })
+	lua require("telescope").setup({ defaults = { file_ignore_patterns = { ".git\\", ".git/", "node_modules\\", "node_modules/" }, mappings = { i = { ["<esc>"] = require("telescope.actions").close, ["<c-d>"] = require('telescope.actions').delete_buffer } } } })
 	" }}}
 
-    " {{{ Misc. Plugins
-    " Setup autopairs
-    lua << AUTOPAIRS
-        npairs = require("nvim-autopairs")
-        endwise = require("nvim-autopairs.ts-rule").endwise
+	" {{{ Misc. Plugins
+	" Setup autopairs
+	lua << AUTOPAIRS
+		npairs = require("nvim-autopairs")
+		endwise = require("nvim-autopairs.ts-rule").endwise
 
-        npairs.setup({})
-        npairs.add_rules({
-            -- endwise("then$", "end", "luau", "if_statement"),
-            -- endwise("function.*%(.*%)$", "end", "luau", {"function_declaration", "local_function", "function"})
-            endwise("then$", "end", "luau", nil),
-            endwise("do$", "end", "luau", nil),
-            endwise("function.*%(.*%)$", "end", "luau", nil)
-        })
+		npairs.setup({})
+		npairs.add_rules({
+			-- endwise("then$", "end", "luau", "if_statement"),
+			-- endwise("function.*%(.*%)$", "end", "luau", {"function_declaration", "local_function", "function"})
+			endwise("then$", "end", "luau", nil),
+			endwise("do$", "end", "luau", nil),
+			endwise("function.*%(.*%)$", "end", "luau", nil)
+		})
 AUTOPAIRS
 
-    " Setup Treesitter
-    lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
+	" Setup Treesitter
+	lua require('nvim-treesitter.configs').setup({ highlight = { enable = true }, indent = { enable = true }, rainbow = { enable = true, extended_mode = true, colors = { "#9b59b6", "#3498db", "#2ecc71" } } })
 
-    lua require('guess-indent').setup()
+	lua require('guess-indent').setup()
 
-    lua require('colorizer').setup()
+	lua require('colorizer').setup()
 
 	set foldcolumn=0
 	set foldlevel=99
@@ -552,43 +582,43 @@ AUTOPAIRS
 	nnoremap <silent> zR :lua require("ufo").openAllFolds()<cr>
 	nnoremap <silent> zM :lua require("ufo").closeAllFolds()<cr>
 
-    lua << UFO
-        local function handler(virtText, lnum, endLnum, width, truncate)
-            local newVirtText = {}
-            local suffix = ('  %d '):format(endLnum - lnum)
-            local sufWidth = vim.fn.strdisplaywidth(suffix)
-            local targetWidth = width - sufWidth
-            local curWidth = 0
-            for _, chunk in ipairs(virtText) do
-                local chunkText = chunk[1]
-                local chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                if targetWidth > curWidth + chunkWidth then
-                    table.insert(newVirtText, chunk)
-                else
-                    chunkText = truncate(chunkText, targetWidth - curWidth)
-                    local hlGroup = chunk[2]
-                    table.insert(newVirtText, {chunkText, hlGroup})
-                    chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                    -- str width returned from truncate() may less than 2nd argument, need padding
-                    if curWidth + chunkWidth < targetWidth then
-                        suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
-                    end
-                    break
-                end
-                curWidth = curWidth + chunkWidth
-            end
-            table.insert(newVirtText, {suffix, 'Folded'})
-            return newVirtText
-        end
+	lua << UFO
+		local function handler(virtText, lnum, endLnum, width, truncate)
+			local newVirtText = {}
+			local suffix = ('  %d '):format(endLnum - lnum)
+			local sufWidth = vim.fn.strdisplaywidth(suffix)
+			local targetWidth = width - sufWidth
+			local curWidth = 0
+			for _, chunk in ipairs(virtText) do
+				local chunkText = chunk[1]
+				local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+				if targetWidth > curWidth + chunkWidth then
+					table.insert(newVirtText, chunk)
+				else
+					chunkText = truncate(chunkText, targetWidth - curWidth)
+					local hlGroup = chunk[2]
+					table.insert(newVirtText, {chunkText, hlGroup})
+					chunkWidth = vim.fn.strdisplaywidth(chunkText)
+					-- str width returned from truncate() may less than 2nd argument, need padding
+					if curWidth + chunkWidth < targetWidth then
+						suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+					end
+					break
+				end
+				curWidth = curWidth + chunkWidth
+			end
+			table.insert(newVirtText, {suffix, 'Folded'})
+			return newVirtText
+		end
 
-        local function providerSelector(bufnr, filetype, buftype)
-            return { 'tree-sitter', 'indent' }
-        end
+		local function providerSelector(bufnr, filetype, buftype)
+			return { 'tree-sitter', 'indent' }
+		end
 
-        require('ufo').setup({ providerSelector = providerSelector, fold_virt_text_handler = handler })
+		require('ufo').setup({ providerSelector = providerSelector, fold_virt_text_handler = handler })
 UFO
 
 
-    " }}}
+	" }}}
 
 endif
