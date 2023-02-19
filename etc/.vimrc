@@ -478,8 +478,9 @@ if has('nvim')
         autocmd CmdlineLeave,WinEnter,BufWinEnter * call timer_start(0, function('s:TermEnter'), {})
     augroup end
 
-    autocmd TermOpen  * startinsert
+    autocmd TermOpen * startinsert
     autocmd TermOpen * let b:term_job_finished = 0
+    autocmd TermOpen * setlocal nonumber norelativenumber
     autocmd TermEnter * if  b:term_job_finished | call feedkeys("\<C-\>\<C-n>") | endif
     autocmd TermClose * if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif
     tnoremap <silent> <C-W>.      <C-W>
