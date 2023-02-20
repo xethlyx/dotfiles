@@ -67,6 +67,19 @@ autocmd FileType c setlocal commentstring=//\ %s
 
 " }}}
 
+" {{{ Functions
+
+function! TermExec(cmd)
+	let b:term_insert = 1
+	execute a:cmd
+endfunction
+
+function! HostnameMatches(hostname)
+	return match(hostname(), a:hostname) >= 0
+endfunction
+
+" }}}
+
 " {{{ Basic Configuration
 set cursorline
 set shiftwidth=4
@@ -140,30 +153,34 @@ nnoremap <S-Down> :m+<CR>
 inoremap <S-Up> <Esc>:m-2<CR>
 inoremap <S-Down> <Esc>:m+<CR>
 
-nnoremap <silent><leader>t :below split +term<cr>
-nnoremap <silent><leader>T :tabnew +term<cr>
 nmap <leader>l :set invlist<cr>
 
+nnoremap <silent><leader>t :below split +term<cr>
+nnoremap <silent><leader>T :tabnew +term<cr>
 nnoremap <F3> :below split +term<cr>
 nnoremap <S-F3> :tabnew +term<cr>
 
 " Remapped caps lock keybindings
 
-nnoremap <A-Left> <C-W>h
-nnoremap <A-Down> <C-W>j
-nnoremap <A-Up> <C-W>k
-nnoremap <A-Right> <C-W>l
-nnoremap <A-i> gT
-nnoremap <A-o> gt
-nnoremap <A-u> <C-W>q
+function! RegisterGlobalKeybind(input, neovideInput, action, terminalAction)
+	let l:keymap = exists('g:neovide') ? '<A-S-' . a:neovideInput . '>' : '<A-' . a:input . '>'
 
-inoremap <A-Left> <C-W>h
-inoremap <A-Down> <C-W>j
-inoremap <A-Up> <C-W>k
-inoremap <A-Right> <C-W>l
-inoremap <A-i> gT
-inoremap <A-o> gt
-inoremap <A-u> <C-W>q
+	execute 'nnoremap' l:keymap a:action
+	execute 'inoremap' l:keymap '<Esc>' . a:action
+	execute 'vnoremap' l:keymap a:action
+
+	if has('nvim')
+		execute 'tnoremap' '<silent>' . l:keymap '<cmd> call TermExec(''' a:terminalAction ''')<CR>'
+	endif
+endfunction
+
+call RegisterGlobalKeybind('Left', 'h', '<C-W>h', 'wincmd h')
+call RegisterGlobalKeybind('Down', 'j', '<C-W>j', 'wincmd j')
+call RegisterGlobalKeybind('Up', 'k', '<C-W>k', 'wincmd k')
+call RegisterGlobalKeybind('Right', 'l', '<C-W>l', 'wincmd l')
+call RegisterGlobalKeybind('i', 'i', 'gT', 'tabN')
+call RegisterGlobalKeybind('o', 'o', 'gt', 'tabn')
+call RegisterGlobalKeybind('u', 'u', '<C-W>q', 'bd!')
 
 " }}}
 
@@ -483,11 +500,6 @@ if has('nvim')
 
 	" {{{ Neovim Terminal Changes
 
-	function! <SID>TermExec(cmd)
-		let b:term_insert = 1
-		execute a:cmd
-	endfunction
-
 	function! s:TermEnter(_)
 		if getbufvar(bufnr(), 'term_insert', 0)
 			startinsert
@@ -509,37 +521,28 @@ if has('nvim')
 	" tnoremap <silent> <C-W><C-.> <C-W>
 	" tnoremap <silent> <C-W><C-\> <C-\>
 	" tnoremap <silent> <C-W>N <C-\><C-N>
-	" tnoremap <silent> <C-W>: <C-\><C-N>:call <SID>TermExec('call feedkeys(":")')<CR>
-	" tnoremap <silent> <C-W><C-W> <cmd>call <SID>TermExec('wincmd w')<CR>
-	" tnoremap <silent> <C-W>h <cmd>call <SID>TermExec('wincmd h')<CR>
-	" tnoremap <silent> <C-W>j <cmd>call <SID>TermExec('wincmd j')<CR>
-	" tnoremap <silent> <C-W>k <cmd>call <SID>TermExec('wincmd k')<CR>
-	" tnoremap <silent> <C-W>l <cmd>call <SID>TermExec('wincmd l')<CR>
-	" tnoremap <silent> <C-W><C-H> <cmd>call <SID>TermExec('wincmd h')<CR>
-	" tnoremap <silent> <C-W><C-J> <cmd>call <SID>TermExec('wincmd j')<CR>
-	" tnoremap <silent> <C-W><C-K> <cmd>call <SID>TermExec('wincmd k')<CR>
-	" tnoremap <silent> <C-W><C-L> <cmd>call <SID>TermExec('wincmd l')<CR>
-	" tnoremap <silent> <C-W>gt <cmd>call <SID>TermExec('tabn')<CR>
-	" tnoremap <silent> <C-W>1gt <cmd>call <SID>TermExec('tabn 1')<CR>
-	" tnoremap <silent> <C-W>2gt <cmd>call <SID>TermExec('tabn 2')<CR>
-	" tnoremap <silent> <C-W>3gt <cmd>call <SID>TermExec('tabn 3')<CR>
-	" tnoremap <silent> <C-W>4gt <cmd>call <SID>TermExec('tabn 4')<CR>
-	" tnoremap <silent> <C-W>5gt <cmd>call <SID>TermExec('tabn 5')<CR>
-	" tnoremap <silent> <C-W>6gt <cmd>call <SID>TermExec('tabn 6')<CR>
-	" tnoremap <silent> <C-W>7gt <cmd>call <SID>TermExec('tabn 7')<CR>
-	" tnoremap <silent> <C-W>8gt <cmd>call <SID>TermExec('tabn 8')<CR>
-	" tnoremap <silent> <C-W>9gt <cmd>call <SID>TermExec('tabn 9')<CR>
-	" tnoremap <silent> <C-W>T <cmd>call <SID>TermExec('wincmd T')<CR>
-	" tnoremap <silent> <C-W>q <cmd>call <SID>TermExec('wincmd q')<CR>
-
-	tnoremap <silent> <A-Left> <cmd>call <SID>TermExec('wincmd h')<CR>
-	tnoremap <silent> <A-Up> <cmd>call <SID>TermExec('wincmd k')<CR>
-	tnoremap <silent> <A-Down> <cmd>call <SID>TermExec('wincmd j')<CR>
-	tnoremap <silent> <A-Right> <cmd>call <SID>TermExec('wincmd l')<CR>
-	tnoremap <silent> <A-i> <cmd>call <SID>TermExec('tabN')<CR>
-	tnoremap <silent> <A-o> <cmd>call <SID>TermExec('tabn')<CR>
-	tnoremap <silent> <A-u> <cmd>call <SID>TermExec('bd!')<CR>
-
+	" tnoremap <silent> <C-W>: <C-\><C-N>:call TermExec('call feedkeys(":")')<CR>
+	" tnoremap <silent> <C-W><C-W> <cmd>call TermExec('wincmd w')<CR>
+	" tnoremap <silent> <C-W>h <cmd>call TermExec('wincmd h')<CR>
+	" tnoremap <silent> <C-W>j <cmd>call TermExec('wincmd j')<CR>
+	" tnoremap <silent> <C-W>k <cmd>call TermExec('wincmd k')<CR>
+	" tnoremap <silent> <C-W>l <cmd>call TermExec('wincmd l')<CR>
+	" tnoremap <silent> <C-W><C-H> <cmd>call TermExec('wincmd h')<CR>
+	" tnoremap <silent> <C-W><C-J> <cmd>call TermExec('wincmd j')<CR>
+	" tnoremap <silent> <C-W><C-K> <cmd>call TermExec('wincmd k')<CR>
+	" tnoremap <silent> <C-W><C-L> <cmd>call TermExec('wincmd l')<CR>
+	" tnoremap <silent> <C-W>gt <cmd>call TermExec('tabn')<CR>
+	" tnoremap <silent> <C-W>1gt <cmd>call TermExec('tabn 1')<CR>
+	" tnoremap <silent> <C-W>2gt <cmd>call TermExec('tabn 2')<CR>
+	" tnoremap <silent> <C-W>3gt <cmd>call TermExec('tabn 3')<CR>
+	" tnoremap <silent> <C-W>4gt <cmd>call TermExec('tabn 4')<CR>
+	" tnoremap <silent> <C-W>5gt <cmd>call TermExec('tabn 5')<CR>
+	" tnoremap <silent> <C-W>6gt <cmd>call TermExec('tabn 6')<CR>
+	" tnoremap <silent> <C-W>7gt <cmd>call TermExec('tabn 7')<CR>
+	" tnoremap <silent> <C-W>8gt <cmd>call TermExec('tabn 8')<CR>
+	" tnoremap <silent> <C-W>9gt <cmd>call TermExec('tabn 9')<CR>
+	" tnoremap <silent> <C-W>T <cmd>call TermExec('wincmd T')<CR>
+	" tnoremap <silent> <C-W>q <cmd>call TermExec('wincmd q')<CR>
 	" }}}
 
 	" {{{ Telescope
@@ -618,6 +621,16 @@ AUTOPAIRS
 		require('ufo').setup({ providerSelector = providerSelector, fold_virt_text_handler = handler })
 UFO
 
+if exists('g:neovide')
+	set guifont=Cascadia\ Code:h12
+	if HostnameMatches('CEPHEUS')
+		let g:neovide_refresh_rate = 144
+		nnoremap <silent><leader>t :below split +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
+		nnoremap <silent><leader>T :tabnew +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
+		nnoremap <F3> :below split +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
+		nnoremap <S-F3> :tabnew +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
+	endif
+endif
 
 	" }}}
 
