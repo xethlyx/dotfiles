@@ -625,10 +625,10 @@ if exists('g:neovide')
 	set guifont=Cascadia\ Code:h12
 	if HostnameMatches('CEPHEUS')
 		let g:neovide_refresh_rate = 144
-		nnoremap <silent><leader>t :below split +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
-		nnoremap <silent><leader>T :tabnew +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
-		nnoremap <F3> :below split +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
-		nnoremap <S-F3> :tabnew +term\ "C:/Program\ Files/Git/bin/bash.exe"<cr>
+		nnoremap <silent><leader>t :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+		nnoremap <silent><leader>T :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+		nnoremap <F3> :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+		nnoremap <S-F3> :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
 	endif
 endif
 
