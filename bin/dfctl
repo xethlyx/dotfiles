@@ -24,14 +24,17 @@ Options:
 USAGE
 }
 
+run-hook() {
+    if [ -f "hooks/${1}.sh" ]; then
+        echo "running hook $1"
+        source ./hooks/${1}.sh
+    fi
+}
+
 install-only() (
     if [ -f "data.lock" ]; then
         printf "already installed: data.lock present\n" 1>&2
         exit 1
-    fi
-
-    if [ -f "update.sh" ]; then
-        source ./update.sh
     fi
 
     cd etc
@@ -71,11 +74,9 @@ install() {
         exit 1
     fi
 
-    if [ -f "setup.sh" ]; then
-        source ./setup.sh
-    fi
-
+    run-hook install
     install-only
+    run-hook postinstall
 }
 
 uninstall-only() (
@@ -106,6 +107,7 @@ uninstall-only() (
 
     rm ../data.lock
     printf "removed data file\n"
+    run-hook uninstall
 )
 
 restore-backup() (
@@ -170,6 +172,7 @@ update() {
         exit 1
     fi
 
+    run-hook update
     uninstall-only
     if [ $full_history ]; then
         git pull --ff-only
@@ -177,6 +180,7 @@ update() {
         git pull --depth=1 --ff-only
     fi
     install-only
+    run-hook post-update
 }
 
 while getopts ':hv' option; do

@@ -6,10 +6,19 @@
 3. Run `dotfiles/bin/dfctl install`.  
 4. RECOMMENDED: Add `$HOME/dotfiles/bin` to path
 
-Optionally, add a `setup.sh` in the root to automatically run scripts on install, or an `update.sh` to be run on updates.
-
 **Command**:
 `dfctl [install|uninstall|update] [-v] [-h] [-a]`
+
+**Hooks**:
+Hooks can be run by creating files with the following names:
+
+ * `hooks/install.sh` Run before installing
+ * `hooks/post-install.sh` Run after installing
+ * `hooks/uninstall.sh` Run after installing
+ * `hooks/update.sh` Run before updating
+ * `hooks/post-update.sh` Run after updating
+
+ The hooks folder does not exist by default and needs to be created.
 
 # File Structure
 
