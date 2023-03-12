@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")"
-
 if bin/confirm -p "Reload shell?" -d y; then
 	source etc/.bashrc
 fi
