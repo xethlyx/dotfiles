@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -e
+
+while getopts p:d:m: flag
+do
+    case "${flag}" in
+        p) prompt=${OPTARG};;
+        d) default=${OPTARG};;
+        m) mode=${OPTARG};;
+    esac
+done
+
+prompt=${prompt:-Are you sure?}
+default=${default:-n}
+
+if [[ $mode != "simple" ]]; then
+    blue=$(tput setaf 014)
+    red=$(tput setaf 001)
+    green=$(tput setaf 002)
+    placeholder=$(tput setaf 244)
+    gray=$(tput setaf 238)
+    reset=$(tput sgr0)
+
+    action=$([[ $default == "n" ]] && echo "N" || echo "Y")
+    prompt="$reset$prompt $gray❭ "
+    query="$reset$blue? $prompt$placeholder$action"
+    confirm="$reset$blue• $prompt"
+else
+    action=$([[ $default == "n" ]] && echo "y/N" || echo "Y/n")
+    prompt="$reset$prompt"
+    query="$prompt [$action] "
+    confirm="$prompt [$action] "
+fi
+
+read -s -p "$query" -n 1 -r reply
+if [[ $reply == "" ]]; then
+    tput cuu1
+else
+    tput cr
+fi
+
+reply=${reply:-$default}
+
+if [[ $reply =~ ^[Yy]$ ]]
+then
+    echo "${confirm}${green}Y${reset} "
+	exit 0
+fi
+
+echo "${confirm}${red}N${reset} "
+exit 1
