@@ -26,7 +26,7 @@ USAGE
 
 run-hook() {
     if [ -f "hooks/${1}.sh" ]; then
-        echo "running hook $1"
+        printf "running hook $1\n"
         source ./hooks/${1}.sh
     fi
 }
@@ -76,7 +76,7 @@ install() {
 
     run-hook install
     install-only
-    run-hook postinstall
+    run-hook post-install
 }
 
 uninstall-only() (
