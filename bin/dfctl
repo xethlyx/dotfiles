@@ -129,7 +129,7 @@ restore-backup() (
         mv $backup $target
     done
 
-    if [ entire != true ]; then
+    if [ $entire != true ]; then
         printf "unable to restore all files successfully. relevant files are in %s and will need to be cleaned up.\n" "$(pwd)" 1>&2
         exit 1
     fi
