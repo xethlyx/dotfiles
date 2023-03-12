@@ -24,12 +24,12 @@ Options:
 USAGE
 }
 
-run-hook() {
+run-hook() (
     if [ -f "hooks/${1}.sh" ]; then
         printf "running hook $1\n"
         source ./hooks/${1}.sh
     fi
-}
+)
 
 install-only() (
     if [ -f "data.lock" ]; then
