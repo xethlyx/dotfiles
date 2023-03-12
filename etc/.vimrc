@@ -138,12 +138,12 @@ augroup END
 inoremap <C-U> <C-G>u<C-U>
 nnoremap <silent><C-L> :let @/ = ""<CR><C-L>
 
-nnoremap <A-j> :m .+1<CR>==
-nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <A-j> :m '>+1<CR>gv=gv
-vnoremap <A-k> :m '<-2<CR>gv=gv
+nnoremap <silent><A-j> :m .+1<CR>==
+nnoremap <silent><A-k> :m .-2<CR>==
+inoremap <silent><A-j> <Esc>:m .+1<CR>==gi
+inoremap <silent><A-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent><A-j> :m '>+1<CR>gv=gv
+vnoremap <silent><A-k> :m '<-2<CR>gv=gv
 
 imap <c-j> <down>
 imap <c-k> <up>
@@ -358,6 +358,10 @@ inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g
 hi! CocErrorSign guifg=#b15e7c
 hi! CocInfoSign guifg=#51617d
 hi! CocWarningSign guifg=#b5a262
+hi! DiagnosticUnderlineError guisp=#b15e7c gui=underline,nocombine
+hi! DiagnosticUnderlineWarn guisp=#b5a262 gui=underline,nocombine
+hi! DiagnosticUnderlineInfo guisp=#51617d gui=underdashed
+hi! link DiagnosticUnderlineHint DiagnosticUnderlineInfo
 hi! link CocInlayHint Comment
 hi! link DiagnosticError CocErrorSign
 hi! link DiagnosticWarn CocWarningSign
