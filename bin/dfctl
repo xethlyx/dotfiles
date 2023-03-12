@@ -31,7 +31,7 @@ install-only() (
     fi
 
     if [ -f "update.sh" ]; then
-        ./update.sh
+        source ./update.sh
     fi
 
     cd etc
@@ -72,7 +72,7 @@ install() {
     fi
 
     if [ -f "setup.sh" ]; then
-        ./setup.sh
+        source ./setup.sh
     fi
 
     install-only
