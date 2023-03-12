@@ -22,23 +22,19 @@ if [[ $mode != "simple" ]]; then
     gray=$(tput setaf 238)
     reset=$(tput sgr0)
 
-    action=$([[ $default == "n" ]] && echo "N" || echo "Y")
+    action=$([[ $default != "y" ]] && echo "N" || echo "Y")
     prompt="$reset$prompt $gray❭ "
     query="$reset$blue? $prompt$placeholder$action"
     confirm="$reset$blue• $prompt"
 else
-    action=$([[ $default == "n" ]] && echo "y/N" || echo "Y/n")
+    action=$([[ $default != "y" ]] && echo "y/N" || echo "Y/n")
     prompt="$reset$prompt"
     query="$prompt [$action] "
     confirm="$prompt [$action] "
 fi
 
 read -s -p "$query" -n 1 -r reply
-if [[ $reply == "" ]]; then
-    tput cuu1
-else
-    tput cr
-fi
+tput cr
 
 reply=${reply:-$default}
 
