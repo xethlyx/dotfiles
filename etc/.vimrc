@@ -23,6 +23,8 @@ if has('nvim')
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 	Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
+	Plug 'Wansmer/treesj'
+	Plug 'rust-lang/rust.vim'
 endif
 
 Plug 'aymericbeaumet/vim-symlink'
@@ -112,6 +114,7 @@ set ttimeoutlen=25
 
 set foldnestmax=1
 set foldminlines=1
+set backupcopy=yes
 
 " Hide ./ directory in :E
 " For some reason this shows?
@@ -582,6 +585,8 @@ AUTOPAIRS
 
 	lua require('colorizer').setup()
 
+	lua require('treesj').setup({})
+
 	set foldcolumn=0
 	set foldlevel=99
 	set foldlevelstart=99
@@ -625,16 +630,16 @@ AUTOPAIRS
 		require('ufo').setup({ providerSelector = providerSelector, fold_virt_text_handler = handler })
 UFO
 
-if exists('g:neovide')
-	set guifont=Cascadia\ Code:h12
-	if HostnameMatches('CEPHEUS')
-		let g:neovide_refresh_rate = 144
-		nnoremap <silent><leader>t :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
-		nnoremap <silent><leader>T :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
-		nnoremap <F3> :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
-		nnoremap <S-F3> :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+	if exists('g:neovide')
+		set guifont=Cascadia\ Code:h12
+		if HostnameMatches('CEPHEUS')
+			let g:neovide_refresh_rate = 144
+			nnoremap <silent><leader>t :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+			nnoremap <silent><leader>T :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+			nnoremap <F3> :below split +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+			nnoremap <S-F3> :tabnew +term\ C:/Progra~1/Git/bin/bash.exe<cr>
+		endif
 	endif
-endif
 
 	" }}}
 
