@@ -6,31 +6,58 @@
 call plug#begin()
 
 if has('nvim')
-	Plug 'neoclide/coc.nvim', {'branch': 'release'}
-	Plug 'josa42/vim-lightline-coc'
+	" Dependencies
+	Plug 'nvim-lua/plenary.nvim'
+
+	" LSP Stuff
+	Plug 'williamboman/mason.nvim', { 'do': ':MasonUpdate' }
+	Plug 'williamboman/mason-lspconfig.nvim'
+	Plug 'neovim/nvim-lspconfig'
+	Plug 'hrsh7th/cmp-nvim-lsp'
+	Plug 'hrsh7th/cmp-buffer'
+	Plug 'hrsh7th/cmp-path'
+	Plug 'hrsh7th/cmp-cmdline'
+	Plug 'hrsh7th/nvim-cmp'
+	Plug 'jose-elias-alvarez/null-ls.nvim'
+	Plug 'jay-babu/mason-null-ls.nvim'
+	Plug 'hrsh7th/cmp-vsnip'
+	Plug 'hrsh7th/vim-vsnip'
+	Plug 'onsails/lspkind.nvim'
+	Plug 'xethlyx/luau-lsp.nvim'
+
+	" Lualine
+	Plug 'nvim-lua/lsp-status.nvim'
+	Plug 'nvim-lualine/lualine.nvim'
+
+	Plug 'rcarriga/nvim-notify'
+	Plug 'MunifTanjim/nui.nvim'
+	Plug 'folke/noice.nvim'
+	
+	" Other stuff
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 	Plug 'nvim-treesitter/playground'
 	Plug 'nmac427/guess-indent.nvim'
-	Plug 'mrjones2014/nvim-ts-rainbow'
 	Plug 'windwp/nvim-autopairs'
 	Plug 'nvim-tree/nvim-tree.lua'
 	Plug 'nvim-tree/nvim-web-devicons'
 	Plug 'norcalli/nvim-colorizer.lua'
+	Plug 'lewis6991/gitsigns.nvim'
 
 	Plug 'kevinhwang91/promise-async'
 	Plug 'kevinhwang91/nvim-ufo'
 
-	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 	Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
 	Plug 'Wansmer/treesj'
 	Plug 'rust-lang/rust.vim'
 endif
 
-Plug 'aymericbeaumet/vim-symlink'
+if !has('nvim')
+	Plug 'itchyny/lightline.vim'
+endif
+
 Plug 'moll/vim-bbye'
 Plug 'tyrannicaltoucan/vim-deep-space', {'as': 'vim-deep-space'}
-Plug 'itchyny/lightline.vim'
 Plug 'tpope/vim-commentary' " gc to comment selection, gcc to comment current line
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
@@ -230,7 +257,7 @@ hi! link VertSplit CursorLine
 hi! link netrwTreeBar Comment
 hi! EndOfBuffer guifg=bg
 
-hi! link TelescopeBorder NonText
+hi! link TelescopeBorder @keyword
 
 " }}}
 
@@ -351,12 +378,9 @@ endfunction
 
 " }}}
 
-" {{{ COC
+" {{{ LSP
 
 if has('nvim')
-	let g:coc_global_extensions = ["coc-git"]
-
-	inoremap <silent><expr> <tab> coc#pum#visible() ? coc#_select_confirm() : "\<C-g>u\<tab>"
 	hi! CocErrorSign guifg=#b15e7c
 	hi! CocInfoSign guifg=#51617d
 	hi! CocWarningSign guifg=#b5a262
@@ -369,102 +393,171 @@ if has('nvim')
 	hi! link DiagnosticWarn CocWarningSign
 	hi! link DiagnosticInfo CocInfoSign
 	hi! link DiagnosticHint CocInfoSign
+	hi! link NormalFloat Normal
+	hi! link FloatBorder Keyword
 
-	" Use K to show documentation in preview window.
-	nnoremap <silent> K :call ShowDocumentation()<CR>
+	command! Format lua vim.lsp.buf.format()
+	nnoremap <silent> K <cmd>lua vim.lsp.buf.hover()<cr>
+	nnoremap <silent> <leader>al <cmd>lua vim.lsp.buf.code_action()<CR>
+	nnoremap <silent> <leader>rn <cmd>lua vim.lsp.buf.rename()<CR>
+	nnoremap <silent> gd <cmd>lua vim.lsp.buf.definition()<CR>
+	" nnoremap <silent> gp <cmd>Lspsaga peek_definition<CR>
+	nnoremap <silent> gt <cmd>lua vim.lsp.buf.type_definition()<CR>
+	" nnoremap <silent> [e <cmd>Lspsaga diagnostic_jump_prev<CR>
+	" nnoremap <silent> ]e <cmd>Lspsaga diagnostic_jump_next<CR>
+	" nnoremap <silent> <leader>o <cmd>Lspsaga outline<CR>
+	autocmd CursorHold * lua vim.diagnostic.open_float({scope="line",border="rounded",source=true,prefix=" • "})
 
-	function! ShowDocumentation()
-		if CocAction('hasProvider', 'hover')
-			call CocActionAsync('doHover')
-		else
-			call feedkeys('K', 'in')
-		endif
-	endfunction
+lua << LSP
+	local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
+	function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+		opts = opts or {}
+		opts.border = opts.border or rounded
+		return orig_util_open_floating_preview(contents, syntax, opts, ...)
+	end
 
-	" Highlight the symbol and its references when holding the cursor.
-	autocmd CursorHold * silent call CocActionAsync('highlight')
+	require("mason").setup()
+	require("mason-lspconfig").setup({
+		ensure_installed = {},
+		-- root_dir = function() return vim.loop.cwd() end,
+		automatic_installation = true,
+	})
+    require("mason-lspconfig").setup_handlers {
+        -- The first entry (without a key) will be the default handler
+        -- and will be called for each installed server that doesn't have
+        -- a dedicated handler.
+        function (server_name) -- default handler (optional)
+            require("lspconfig")[server_name].setup {}
+        end,
+		["luau_lsp"] = function(server_name)
+			require("luau-lsp").setup({
+				sourcemap = {
+					enable = true, -- enable sourcemap generation
+					autogenerate = true, -- auto generate sourcemap when saving/deleting buffers
+				},
+				server = {
+					types = {
+						roblox = true, -- enable roblox api
+					},
+				},
+			})
+		end,
+    }
+	require("mason-null-ls").setup({
+	})
 
-	" Symbol renaming.
-	nmap <leader>rn <Plug>(coc-rename)
-	nmap <f2> <Plug>(coc-rename)
+	local cmp = require("cmp")
+	local lspkind = require("lspkind")
 
-	" Formatting selected code.
-	xmap <leader>f  <Plug>(coc-format-selected)
-	nmap <leader>f  <Plug>(coc-format-selected)
+	cmp.setup({
+		snippet = {
+			-- REQUIRED - you must specify a snippet engine
+			expand = function(args)
+				vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+				-- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+				-- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+				-- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+			end,
+		},
+		window = {
+			completion = cmp.config.window.bordered(),
+			documentation = cmp.config.window.bordered(),
+		},
+		mapping = cmp.mapping.preset.insert({
+			['<C-b>'] = cmp.mapping.scroll_docs(-4),
+			['<C-f>'] = cmp.mapping.scroll_docs(4),
+			['<C-Space>'] = cmp.mapping.complete(),
+			['<C-e>'] = cmp.mapping.abort(),
+			-- ['<tab>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+			-- ['<tab>'] = cmp.mapping(cmp.mapping.confirm({ select = true, behavior = cmp.ConfirmBehavior.Insert }), { 'i', 'c' }),
+			['<tab>'] = cmp.mapping.select_next_item(),
+			['<S-tab>'] = cmp.mapping.select_prev_item(),
+		}),
+		sources = cmp.config.sources({
+			{ name = 'nvim_lsp' },
+			{ name = 'vsnip' }, -- For vsnip users.
+			-- { name = 'luasnip' }, -- For luasnip users.
+			-- { name = 'ultisnips' }, -- For ultisnips users.
+			-- { name = 'snippy' }, -- For snippy users.
+		}, {
+			{ name = 'buffer' },
+		}),
+		formatting = {
+			format = lspkind.cmp_format({
+				mode = 'symbol', -- show only symbol annotations
+				maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+				ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
 
-	" Applying codeAction to the selected region.
-	" Example: `<leader>aap` for current paragraph
-	xmap <leader>a  <Plug>(coc-codeaction-selected)
-	nmap <leader>a  <Plug>(coc-codeaction-selected)
+				-- The function below will be called before any actual modifications from lspkind
+				-- so that you can provide more controls on popup customization. (See [#30](https://github.com/onsails/lspkind-nvim/pull/30))
+				before = function (entry, vim_item)
+					return vim_item
+				end
+			})
+		},
+		completion = {
+			completeopt = 'menu,menuone,preview,noselect'
+		},
+	})
 
-	" Remap keys for applying codeAction to the current buffer.
-	nmap <leader>ac  <Plug>(coc-codeaction)
-	nmap <leader>al  <Plug>(coc-codeaction-cursor)
-	" Apply AutoFix to problem on the current line.
-	nmap <leader>qf  <Plug>(coc-fix-current)
+	-- Set configuration for specific filetype.
+	cmp.setup.filetype('gitcommit', {
+		sources = cmp.config.sources({
+			{ name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+		}, {
+			{ name = 'buffer' },
+		})
+	})
 
-	" Run the Code Lens action on the current line.
-	nmap <leader>cl  <Plug>(coc-codelens-action)
+	-- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+	cmp.setup.cmdline({ '/', '?' }, {
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = {
+			{ name = 'buffer' }
+		}
+	})
 
-	" Map function and class text objects
-	" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
-	xmap if <Plug>(coc-funcobj-i)
-	omap if <Plug>(coc-funcobj-i)
-	xmap af <Plug>(coc-funcobj-a)
-	omap af <Plug>(coc-funcobj-a)
-	xmap ic <Plug>(coc-classobj-i)
-	omap ic <Plug>(coc-classobj-i)
-	xmap ac <Plug>(coc-classobj-a)
-	omap ac <Plug>(coc-classobj-a)
+	-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+	cmp.setup.cmdline(':', {
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = cmp.config.sources({
+			{ name = 'path' }
+		}, {
+			{ name = 'cmdline' }
+		})
+	})
 
-	" Remap <C-f> and <C-b> for scroll float windows/popups.
-	if has('nvim-0.4.0') || has('patch-8.2.0750')
-		nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-		nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-		inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-		inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-		vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-		vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-	endif
+	local lspconfig = require("lspconfig")
 
-	" Use CTRL-S for selections ranges.
-	" Requires 'textDocument/selectionRange' support of language server.
-	nmap <silent> <C-s> <Plug>(coc-range-select)
-	xmap <silent> <C-s> <Plug>(coc-range-select)
+	local null_ls = require("null-ls")
 
-	" Add `:Format` command to format current buffer.
-	command! -nargs=0 Format :call CocActionAsync('format')
+	null_ls.setup({
+		sources = {
+			null_ls.builtins.formatting.stylua
+		}
+	})
 
-	" Add `:Fold` command to fold current buffer.
-	command! -nargs=? Fold :call	 CocAction('fold', <f-args>)
-
-	" Add `:OR` command for organize imports of the current buffer.
-	command! -nargs=0 OR   :call	 CocActionAsync('runCommand', 'editor.action.organizeImport')
-
-	call coc#config('git', {
-		\	'addGBlameToBufferVar': 'true',
-		\	'addedSign.text': '▍',
-		\	'changedSign.text': '▍',
-		\})
-
-	call coc#config('diagnostic', {
-		\	'errorSign': '×',
-		\	'warningSign': '×',
-		\	'hintSign': '×',
-		\	'infoSign': '×',
-		\})
-
-	call coc#config('diagnostic', {
-		\	'virtualText': 'true',
-		\	'virtualTextCurrentLineOnly': 'false',
-		\	'virtualTextLines': 1,
-		\})
-
-	call coc#config('semanticTokens', {
-		\	'enable': 'true',
-		\	'highlightPriority': 0,
-		\	'filetypes': ['*'],
-		\})
+	-- require("lspsaga").setup({
+	-- 	symbol_in_winbar = { enable = false },
+	-- 	lightbulb = { enable = false },
+	-- 	code_action = { keys = { quit = "<esc>" } },
+	-- 	rename = { quit = "<esc>" },
+	-- 	ui = {
+	-- 		-- This option only works in Neovim 0.9
+	-- 		title = true,
+	-- 		-- Border type can be single, double, rounded, solid, shadow.
+	-- 		border = "single",
+	-- 		winblend = 0,
+	-- 		expand = "",
+	-- 		collapse = "",
+	-- 		code_action = "💡",
+	-- 		incoming = " ",
+	-- 		outgoing = " ",
+	-- 		hover = ' ',
+	-- 		kind = {},
+	-- 	},
+	-- })
+LSP
 endif
 
 " }}}
@@ -483,7 +576,7 @@ if has('nvim')
 	endif
 
 	" Custom luau highlight
-	lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "https://github.com/xethlyx/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
+	lua require("nvim-treesitter.parsers").get_parser_configs().luau = { install_info = { url = "https://github.com/polychromatist/tree-sitter-luau.git", branch = "main", files = { "src/parser.c", "src/scanner.c" }, requires_generate_from_grammar = false }, filetype = "luau" }
 
 	" Use luau highlight for lua files because it behaves better..
 	augroup useLuauSyntax
@@ -631,6 +724,7 @@ AUTOPAIRS
 UFO
 
 	if exists('g:neovide')
+		set linespace=1
 		set guifont=Cascadia\ Code:h12
 		if HostnameMatches('CEPHEUS')
 			let g:neovide_refresh_rate = 144
@@ -641,6 +735,122 @@ UFO
 		endif
 	endif
 
+	lua require('gitsigns').setup()
+
+	lua << NOICE
+		require("noice").setup({
+			lsp = {
+				-- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+				override = {
+					["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+					["vim.lsp.util.stylize_markdown"] = true,
+					["cmp.entry.get_documentation"] = true,
+				},
+			},
+			-- you can enable a preset for easier configuration
+			presets = {
+				bottom_search = true, -- use a classic bottom cmdline for search
+				command_palette = true, -- position the cmdline and popupmenu together
+				long_message_to_split = true, -- long messages will be sent to a split
+				inc_rename = false, -- enables an input dialog for inc-rename.nvim
+				lsp_doc_border = false, -- add a border to hover docs and signature help
+			},
+		})
+NOICE
+
+	" }}}
+	
+	" {{{ Lualine
+	
+	lua << LUALINE
+		local colors = {
+			color11  = "#709d6c",
+			color0   = "#9aa7bd",
+			color1   = "#323c4d",
+			color2   = "#51617d",
+			color3   = "#232936",
+			color4   = "#608cc3",
+			color5   = "#b15e7c",
+			color8   = "#b3785d",
+		}
+
+		local deepspace = {
+			inactive = {
+				a = { fg = colors.color0, bg = colors.color1 , gui = "bold", },
+				c = { fg = colors.color2, bg = colors.color3 },
+				b = { fg = colors.color2, bg = colors.color3 },
+			},
+			normal = {
+				a = { fg = colors.color3, bg = colors.color4 , gui = "bold", },
+				c = { fg = colors.color2, bg = colors.color3 },
+				b = { fg = colors.color0, bg = colors.color1 },
+			},
+			replace = {
+				a = { fg = colors.color3, bg = colors.color5 , gui = "bold", },
+				b = { fg = colors.color0, bg = colors.color1 },
+			},
+			visual = {
+				a = { fg = colors.color3, bg = colors.color8 , gui = "bold", },
+				b = { fg = colors.color0, bg = colors.color1 },
+			},
+			insert = {
+				a = { fg = colors.color3, bg = colors.color11 , gui = "bold", },
+				b = { fg = colors.color0, bg = colors.color1 },
+			},
+		}
+
+		local function get_short_cwd()
+			return vim.fn.fnamemodify(vim.fn.getcwd(), ':~')
+		end
+
+		local nvim_tree = {
+			sections = {
+				lualine_c = { get_short_cwd },
+			},
+			filetypes = { 'NvimTree' }
+		}
+
+		local lsp_status = require("lsp-status")
+		lsp_status.config({
+			status_symbol = "",
+		})
+
+		local function get_status()
+			local status = lsp_status.status()
+			return vim.trim(status)
+		end
+
+		require("lualine").setup({
+			options = {
+				theme = deepspace,
+				component_separators = "",
+				section_separators = "",
+			},
+			sections = {
+				lualine_b = {
+					{
+						'branch',
+						icon = "",
+						fmt = function(branch, ctx)
+							local status = get_status()
+							local out = {}
+
+							if branch ~= "" then table.insert(out, " " .. branch) end
+							if status ~= "" then table.insert(out, status) end
+							
+							return table.concat(out, " ")
+						end,
+						padding = { left = 0, right = 1 }
+					}
+				},
+				lualine_c = { 'filename', 'diff' },
+				lualine_x = { 'encoding', 'fileformat', { 'filetype', colored = false, icon_only = true } },
+			},
+			extensions = { nvim_tree },
+		})
+LUALINE
+
 	" }}}
 
 endif
+
