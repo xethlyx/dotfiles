@@ -14,7 +14,8 @@ if command -v nvim &> /dev/null; then
     alias vim='nvim'
 fi
 
+alias k=kubectl
 if command -v kubectl &> /dev/null; then
     source <(kubectl completion bash)
+    complete -o default -F __start_kubectl k
 fi
-
