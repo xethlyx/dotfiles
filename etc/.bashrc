@@ -14,6 +14,11 @@ if command -v nvim &> /dev/null; then
     alias vim='nvim'
 fi
 
+# https://github.com/scop/bash-completion/tree/master
+if [ -f /usr/local/share/bash-completion/bash_completion ]; then
+    source /usr/local/share/bash-completion/bash_completion
+fi
+
 alias k=kubectl
 if command -v kubectl &> /dev/null; then
     source <(kubectl completion bash)
